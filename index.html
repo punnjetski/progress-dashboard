@@ -29,24 +29,22 @@
 html,body{margin:0}
 
 /* ---------- ambient clock: animated once on the root so the light never restarts when the screen redraws ---------- */
-@property --ang{syntax:'<angle>';inherits:true;initial-value:0deg}
+@property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
 @property --pulse{syntax:'<number>';inherits:true;initial-value:.5}
 @property --ry{syntax:'<percentage>';inherits:false;initial-value:-60%}
-@property --bx{syntax:'<percentage>';inherits:false;initial-value:12%}
-@property --by{syntax:'<percentage>';inherits:false;initial-value:6%}
 @keyframes k-spin{to{--ang:360deg}}
 @keyframes k-pulse{from{--pulse:0}to{--pulse:1}}
 @keyframes k-sheen{to{background-position:-200% 0}}
 @keyframes k-run{from{--ry:-60%}to{--ry:160%}}
-@keyframes k-drift{0%{--bx:12%;--by:6%}50%{--bx:58%;--by:72%}100%{--bx:92%;--by:18%}}
+@keyframes k-drift{0%{transform:translate3d(-10vw,-12vh,0)}50%{transform:translate3d(38vw,52vh,0)}100%{transform:translate3d(72vw,2vh,0)}}
 /* the travelling edge light is clocked once on the page area (it survives redraws); the glow pulse lives on the lit cards only */
 html{--spd:9s}
 html[data-motion=full]{--spd:4s}
-#view,.login{animation:k-spin var(--spd) linear infinite}
 .card.lit{animation:k-pulse calc(var(--spd)/2) ease-in-out infinite alternate}
-html[data-motion=off]{--ang:210deg;--pulse:.55}
+html[data-motion=off]{--pulse:.55}
 html[data-motion=off] .rail::after{--ry:20%}
-html[data-motion=off] body::before{--bx:30%;--by:10%}
+html[data-motion=off] .card.lit::before{--ang:210deg}
+html[data-motion=off] body::before{transform:translate3d(30vw,8vh,0)}
 
 /* ---------- colour: dark grey and ivory, one gem accent chosen by the owner ---------- */
 :root{
@@ -79,7 +77,7 @@ html[data-accent=ruby],html[data-accent=sapphire],html[data-accent=emerald],html
 /* ---------- base ---------- */
 html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;scrollbar-width:thin;scrollbar-color:var(--line2) transparent;background:var(--bg)}
 body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-b);font-variant-numeric:tabular-nums;-webkit-text-size-adjust:100%;min-height:100dvh;transition:background-color .3s,color .3s}
-body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(640px 440px at var(--bx) var(--by),color-mix(in srgb,var(--gA) calc(var(--wash)*100%),transparent),transparent 70%);animation:k-drift calc(var(--spd)*3) ease-in-out infinite alternate}
+body::before{content:"";position:fixed;left:0;top:0;width:min(900px,90vw);height:min(640px,70vh);z-index:-1;pointer-events:none;will-change:transform;background:radial-gradient(closest-side,color-mix(in srgb,var(--gA) calc(var(--wash)*100%),transparent),transparent);animation:k-drift calc(var(--spd)*3) ease-in-out infinite alternate}
 ::selection{background:color-mix(in srgb,var(--gM) 38%,transparent);color:var(--ink)}
 input,textarea,select{caret-color:var(--gB)}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -122,7 +120,7 @@ main{padding:34px clamp(16px,3.4vw,48px) 90px;min-width:0}
   .trow .dn{grid-column:3;grid-row:1}
   .trow .subs{grid-column:2/-1}
 }
-.card.lit::before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:2px;pointer-events:none;z-index:2;background:conic-gradient(from var(--ang),transparent 0 44%,var(--gA) 62%,var(--lit) 82%,transparent 100%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.card.lit::before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:2px;pointer-events:none;z-index:2;background:conic-gradient(from var(--ang),transparent 0 44%,var(--gA) 62%,var(--lit) 82%,transparent 100%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:k-spin var(--spd) linear infinite;animation-delay:calc(var(--clock,0s)*-1)}
 .ch{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
 .ch .sub{color:var(--ink3);font-size:13.5px}.ch .right{margin-left:auto;display:flex;gap:8px;align-items:center}
 .page-h{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-bottom:14px;background:linear-gradient(90deg,var(--gB),transparent 55%) left bottom/100% 2px no-repeat}
@@ -193,7 +191,8 @@ input[type=date]{color-scheme:inherit}
 .grp h3{font:400 21px var(--f-d)}
 .grp .pc{margin-left:auto;display:flex;align-items:center;gap:10px;color:var(--ink3);font-size:13px;font-weight:700}
 .thread{display:block;height:6px;border-radius:99px;background:var(--surface2);overflow:hidden;min-width:90px;flex:1;max-width:200px}
-.thread i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gA),var(--gB),var(--gA)) 0 0/200% 100%;box-shadow:0 0 12px -2px color-mix(in srgb,var(--gB) 70%,transparent);transition:width .7s cubic-bezier(.2,.8,.2,1);animation:k-sheen calc(var(--spd)/1.3) linear infinite}
+.thread i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gA),var(--gB),var(--gA)) 0 0/200% 100%;box-shadow:0 0 12px -2px color-mix(in srgb,var(--gB) 70%,transparent);transition:width .7s cubic-bezier(.2,.8,.2,1)}
+.card.lit .thread i{animation:k-sheen calc(var(--spd)/1.3) linear infinite}
 .trow{display:grid;grid-template-columns:40px minmax(0,1fr) auto auto;gap:4px 14px;align-items:center;padding:12px 8px 12px 12px;border-top:1px solid var(--line);position:relative;border-radius:var(--rs);transition:background-color .2s,box-shadow .25s,opacity .3s}
 .trow:hover{background:color-mix(in srgb,var(--gM) 7%,transparent)}
 .trow{--pc:var(--p0)}.trow.p1{--pc:var(--p1)}.trow.p2{--pc:var(--p2)}
@@ -342,6 +341,7 @@ html[data-motion=off] *,html[data-motion=off] *::before,html[data-motion=off] *:
   .page-h h1{font-size:30px}
 }
 @media (pointer:coarse){
+  .card.lit{animation:none}.card.lit .thread i{animation:none}
   .star{width:42px;height:42px}.trow{grid-template-columns:46px minmax(0,1fr) auto}.tick{width:34px;height:34px}.todo{grid-template-columns:40px minmax(0,1fr) auto}
   .chk{width:26px;height:26px}.icon-btn{width:42px;height:42px}.dn{padding:11px 17px}.chipb{padding:11px 16px}.tabbar button{font-size:12px;min-height:52px}
 }
@@ -706,7 +706,7 @@ function vDash(){
   const prio = '<section class="card lit"><div class="ch"><h2>Today’s Priority</h2><span class="sub">' + (focus.length ? plural(focus.length, 'task') + ' picked' : 'Nothing picked yet') + '</span></div>' +
     (focus.length ? '<div class="list">' + focus.map(x => taskRow(x, {path:true})).join('') + '</div>' : '<p class="empty">Tap the star on any task to put it here. Start with what is due this week below, or open Company or Personal.</p>') +
     (carry.length ? '<h3 class="faint" style="margin:18px 0 4px;font-size:14px">Picked earlier, still open</h3><div class="list">' + carry.slice(0, 4).map(x => taskRow(x, {path:true, why:'picked ' + fmt(x.focusDate, 'dm')})).join('') + '</div>' : '') + '</section>';
-  const week = '<section class="card"><div class="ch"><h2>Week Progress</h2><span class="sub">' + fmt(wk.from, 'dm') + ' – ' + fmt(wk.to, 'dm') + '</span></div>' +
+  const week = '<section class="card lit"><div class="ch"><h2>Week Progress</h2><span class="sub">' + fmt(wk.from, 'dm') + ' – ' + fmt(wk.to, 'dm') + '</span></div>' +
     (wk.pct == null ? '<p class="empty" style="padding-top:0">Nothing has a deadline this week.</p>' : '<div class="wk"><b>' + wk.pct + '<sup>%</sup></b><span class="thread" role="img" aria-label="' + wk.pct + ' percent complete"><i style="width:' + wk.pct + '%"></i></span></div>') +
     '<div class="mini"><span>Completed this week</span><b>' + wk.done + ' of ' + wk.total + '</b></div><div class="mini"><span>Due today</span><b>' + wk.today + '</b></div><div class="mini"><span>Overdue</span><b' + (wk.overdue ? ' style="color:var(--bad)"' : '') + '>' + wk.overdue + '</b></div>' +
     (wk.nodue ? '<div class="mini"><span>Without a deadline</span><b style="color:var(--bad)">' + wk.nodue + '</b></div>' : '') + '</section>';
@@ -961,13 +961,14 @@ let raf = 0;
 function scheduleRender(){ if(!raf) raf = requestAnimationFrame(() => { raf = 0; render(); }); }
 function render(){
   if(S.auth === 'checking'){ app.innerHTML = '<p style="padding:24px;color:var(--ink2)">Loading Progress Dashboard…</p>'; viewEl = null; return; }
-  if(S.auth === 'out'){ const ae = document.activeElement, id = ae && ae.id; app.innerHTML = vLogin(); viewEl = null; if(id){ const el = document.getElementById(id); if(el) el.focus(); } return; }
+  if(S.auth === 'out'){ const ae = document.activeElement, id = ae && ae.id; document.documentElement.style.setProperty('--clock', ((Date.now() / 1000) % (S.motion === 'full' ? 4 : 9)).toFixed(2) + 's'); app.innerHTML = vLogin(); viewEl = null; if(id){ const el = document.getElementById(id); if(el) el.focus(); } return; }
   if(!viewEl || !document.getElementById('view')){ app.innerHTML = shell(); viewEl = document.getElementById('view'); }
   const ae = document.activeElement;
   const id = ae && ae.id && viewEl.contains(ae) ? ae.id : null;
   const sel = id && typeof ae.selectionStart === 'number' ? [ae.selectionStart, ae.selectionEnd] : null;
   const y = window.scrollY;
   navPaint();
+  document.documentElement.style.setProperty('--clock', ((Date.now() / 1000) % (S.motion === 'full' ? 4 : 9)).toFixed(2) + 's');
   viewEl.innerHTML = VIEWS[S.view]();
   if(S.enter){ viewEl.setAttribute('data-enter', ''); S.enter = false; } else viewEl.removeAttribute('data-enter');
   if(S.view === 'dash') ckPaint();
