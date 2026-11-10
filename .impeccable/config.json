@@ -11,6 +11,24 @@
         ],
         "createdAt": "2026-11-10T10:11:51.176Z",
         "reason": "user confirmed: asked for luxury-car ambient edge light with glow on Sapphire and Ruby themes"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "index.html"
+        ],
+        "createdAt": "2026-11-10T11:20:20.356Z",
+        "reason": "user confirmed: asked for Ivory as part of the dark grey, ivory and gem accent palette"
+      },
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          "index.html"
+        ],
+        "createdAt": "2026-11-10T11:20:20.449Z",
+        "reason": "user confirmed: asked for luxury-car ambient edge light with glow on the accent"
       }
     ]
   }

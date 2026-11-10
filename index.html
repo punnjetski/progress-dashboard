@@ -31,51 +31,55 @@ html,body{margin:0}
 /* ---------- ambient clock: animated once on the root so the light never restarts when the screen redraws ---------- */
 @property --ang{syntax:'<angle>';inherits:true;initial-value:0deg}
 @property --pulse{syntax:'<number>';inherits:true;initial-value:.5}
-@property --shx{syntax:'<percentage>';inherits:true;initial-value:0%}
-@property --ry{syntax:'<percentage>';inherits:true;initial-value:-60%}
-@property --bx{syntax:'<percentage>';inherits:true;initial-value:12%}
-@property --by{syntax:'<percentage>';inherits:true;initial-value:6%}
+@property --ry{syntax:'<percentage>';inherits:false;initial-value:-60%}
+@property --bx{syntax:'<percentage>';inherits:false;initial-value:12%}
+@property --by{syntax:'<percentage>';inherits:false;initial-value:6%}
 @keyframes k-spin{to{--ang:360deg}}
 @keyframes k-pulse{from{--pulse:0}to{--pulse:1}}
-@keyframes k-sheen{to{--shx:-200%}}
+@keyframes k-sheen{to{background-position:-200% 0}}
 @keyframes k-run{from{--ry:-60%}to{--ry:160%}}
 @keyframes k-drift{0%{--bx:12%;--by:6%}50%{--bx:58%;--by:72%}100%{--bx:92%;--by:18%}}
-html{--spd:9s;animation:k-spin var(--spd) linear infinite,k-pulse calc(var(--spd)/2) ease-in-out infinite alternate,k-sheen calc(var(--spd)/1.3) linear infinite,k-run calc(var(--spd)*.9) linear infinite,k-drift calc(var(--spd)*3) ease-in-out infinite alternate}
+/* the travelling edge light is clocked once on the page area (it survives redraws); the glow pulse lives on the lit cards only */
+html{--spd:9s}
 html[data-motion=full]{--spd:4s}
-html[data-motion=off]{animation:none;--ang:210deg;--pulse:.55;--shx:-60%;--ry:20%;--bx:30%;--by:10%}
+#view,.login{animation:k-spin var(--spd) linear infinite}
+.card.lit{animation:k-pulse calc(var(--spd)/2) ease-in-out infinite alternate}
+html[data-motion=off]{--ang:210deg;--pulse:.55}
+html[data-motion=off] .rail::after{--ry:20%}
+html[data-motion=off] body::before{--bx:30%;--by:10%}
 
 /* ---------- colour: dark grey and ivory, one gem accent chosen by the owner ---------- */
 :root{
   --bg:#F6F2E7;--surface:#FFFEF9;--surface2:#EFEADB;--ink:#23262B;--ink2:#464A52;--ink3:#62666E;
-  --line:#E2DCCB;--line2:#CFC8B4;--rail:#2B2E33;--rail-ink:#F3EEDF;--rail-ink2:#C9C5B8;--rail-line:#43474E;
-  --p0:#62666E;--p1:#955500;--p2:#C0390A;--ok:#1B7550;--bad:#C0390A;--on:#FFFFFF;
+  --line:#E2DCCB;--line2:#CFC8B4;--ctl:#8A8678;--rail:#2B2E33;--rail-ink:#F3EEDF;--rail-ink2:#C9C5B8;--rail-line:#43474E;
+  --p0:#5A5E66;--p1:#8A4D00;--p2:#AE3206;--ok:#1B7550;--bad:#C0390A;--bad-fill:#BD3908;--on:#FFFFFF;
   --c1:#2F5DBF;--c2:#1F7A62;--c3:#B25A14;--c4:#7A4FB0;--c5:#B03C7A;--c6:#5F6877;
   --r:16px;--rs:10px;--f-d:'Marcellus','IBM Plex Sans Thai',Georgia,serif;--f-b:'Manrope','IBM Plex Sans Thai',system-ui,-apple-system,'Segoe UI',sans-serif;
-  --gA:#A50E28;--gM:#C8102E;--gB:#F04A68;--acc:var(--gA);--wash:.12;--lift:0 1px 0 rgba(255,255,255,.6) inset,0 10px 26px -18px rgba(35,38,43,.35);
+  --gA:#A50E28;--gM:#C8102E;--gB:#F04A68;--acc:var(--gA);--ring:var(--gA);--wash:.12;--lift:0 1px 0 rgba(255,255,255,.6) inset,0 10px 26px -18px rgba(35,38,43,.35);
   color-scheme:light;
 }
 html[data-mode=dark]{
   --bg:#1D1F23;--surface:#272A30;--surface2:#2F333A;--ink:#F4EFE0;--ink2:#CFCBBE;--ink3:#A6A399;
-  --line:#383C44;--line2:#4B505A;--rail:#141619;--rail-ink:#F3EEDF;--rail-ink2:#B9B5A9;--rail-line:#2A2D33;
-  --p0:#A6A399;--p1:#F0B04A;--p2:#FF7A45;--ok:#5CC9A0;--bad:#FF7A45;
+  --line:#383C44;--line2:#4B505A;--ctl:#7C8088;--rail:#141619;--rail-ink:#F3EEDF;--rail-ink2:#B9B5A9;--rail-line:#2A2D33;
+  --p0:#B9B5AA;--p1:#F0B04A;--p2:#FF8E60;--ok:#5CC9A0;--bad:#FF7A45;--bad-fill:#B93A08;
   --c1:#8FB0FF;--c2:#6FD1B0;--c3:#F0A25E;--c4:#C2A3F0;--c5:#F08CBA;--c6:#A9B2C0;
-  --gA:#B30F2E;--gM:#D4153A;--gB:#FF5C7A;--acc:var(--gB);--wash:.2;--lift:0 1px 0 rgba(255,255,255,.04) inset,0 14px 30px -20px rgba(0,0,0,.7);
+  --gA:#B30F2E;--gM:#D4153A;--gB:#FF5C7A;--acc:var(--gB);--ring:var(--gB);--wash:.2;--lift:0 1px 0 rgba(255,255,255,.04) inset,0 14px 30px -20px rgba(0,0,0,.7);
   color-scheme:dark;
 }
 html[data-accent=sapphire]{--gA:#0B3BC2;--gM:#1F57E8;--gB:#4C8DFF}
 html[data-accent=sapphire][data-mode=dark]{--gA:#0C3FD6;--gM:#2260F5;--gB:#5B9BFF}
 html[data-accent=emerald]{--gA:#056A47;--gM:#08805A;--gB:#1FD39A}
-html[data-accent=emerald][data-mode=dark]{--gA:#06704A;--gM:#0A8A5F;--gB:#3DE0AC}
+html[data-accent=emerald][data-mode=dark]{--gA:#06704A;--gM:#09805A;--gB:#3DE0AC}
 html[data-accent=amethyst]{--gA:#5B21B6;--gM:#7C3AED;--gB:#B28BFF}
 html[data-accent=amethyst][data-mode=dark]{--gA:#6D28D9;--gM:#7C3AED;--gB:#C4A4FF}
 html[data-accent=topaz]{--gA:#92400E;--gM:#B45309;--gB:#FBA415}
-html[data-accent=topaz][data-mode=dark]{--gA:#A64B07;--gM:#C2570A;--gB:#FFC94A}
+html[data-accent=topaz][data-mode=dark]{--gA:#A64B07;--gM:#B84E08;--gB:#FFC94A}
 html[data-accent=ruby],html[data-accent=sapphire],html[data-accent=emerald],html[data-accent=amethyst],html[data-accent=topaz]{--lit:color-mix(in srgb,var(--gB) 82%,#fff)}
 
 /* ---------- base ---------- */
 html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;scrollbar-width:thin;scrollbar-color:var(--line2) transparent;background:var(--bg)}
 body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-b);font-variant-numeric:tabular-nums;-webkit-text-size-adjust:100%;min-height:100dvh;transition:background-color .3s,color .3s}
-body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(640px 440px at var(--bx) var(--by),color-mix(in srgb,var(--gA) calc(var(--wash)*100%),transparent),transparent 70%)}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(640px 440px at var(--bx) var(--by),color-mix(in srgb,var(--gA) calc(var(--wash)*100%),transparent),transparent 70%);animation:k-drift calc(var(--spd)*3) ease-in-out infinite alternate}
 ::selection{background:color-mix(in srgb,var(--gM) 38%,transparent);color:var(--ink)}
 input,textarea,select{caret-color:var(--gB)}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -85,21 +89,21 @@ h3,h4{margin:0;font-weight:700;line-height:1.3}
 h1{font-size:clamp(32px,4.6vw,44px)}
 h2{font-size:22px}
 p{margin:0}
-:focus-visible{outline:2px solid var(--gB);outline-offset:2px;border-radius:6px}
+:focus-visible{outline:2px solid var(--ring);outline-offset:2px;border-radius:6px}
 .muted{color:var(--ink2)}.faint{color:var(--ink3)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* ---------- shell ---------- */
 .app{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100dvh}
 .rail{position:sticky;top:0;height:100dvh;background:var(--rail);color:var(--rail-ink);padding:28px 16px 18px;display:flex;flex-direction:column;gap:4px;border-right:1px solid var(--rail-line)}
-.rail::after{content:"";position:absolute;top:0;right:-1px;width:3px;height:100%;pointer-events:none;background:linear-gradient(180deg,transparent 0,var(--gB) 50%,transparent 100%) 0 var(--ry)/100% 42% no-repeat,linear-gradient(180deg,transparent,color-mix(in srgb,var(--gB) 40%,transparent),transparent)}
+.rail::after{content:"";position:absolute;top:0;right:-1px;width:3px;height:100%;pointer-events:none;background:linear-gradient(180deg,transparent 0,var(--gB) 50%,transparent 100%) 0 var(--ry)/100% 42% no-repeat,linear-gradient(180deg,transparent,color-mix(in srgb,var(--gB) 40%,transparent),transparent);animation:k-run calc(var(--spd)*.9) linear infinite}
 .brand{display:flex;align-items:center;gap:11px;padding:0 10px 22px;font:400 19px/1.1 var(--f-d)}
 .brand svg{flex:none}
 .nav{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:var(--rs);color:var(--rail-ink2);font-weight:600;position:relative;overflow:hidden;transition:transform .22s cubic-bezier(.34,1.56,.64,1),background-color .2s,color .2s}
 .nav svg{flex:none;opacity:.9}
 .nav .cnt{margin-left:auto;font-size:12px;font-weight:700;opacity:.8}
 .nav:hover{color:var(--rail-ink);background:rgba(255,255,255,.06);transform:translateX(4px)}
-.nav[aria-current=page]{color:#fff;background:linear-gradient(90deg,var(--gA),var(--gM));box-shadow:0 8px 20px -12px var(--gM),inset 2px 0 0 var(--lit)}
+.nav[aria-current=page]{color:#fff;background:linear-gradient(90deg,var(--gA),var(--gM));box-shadow:0 8px 20px -12px var(--gM)}
 .rail .sp{flex:1}
 .who{padding:10px 12px 0;font-size:12.5px;color:var(--rail-ink2);word-break:break-all;border-top:1px solid var(--rail-line);margin-top:8px}
 .look-btn{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:var(--rs);color:var(--rail-ink2);font-weight:600;transition:background-color .2s,color .2s}
@@ -138,14 +142,14 @@ main{padding:34px clamp(16px,3.4vw,48px) 90px;min-width:0}
 .btn-primary[disabled]{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
 .btn-sm{padding:7px 12px;font-size:13.5px}
 .btn-quiet{background:transparent;border-color:transparent;color:var(--ink2)}
-.btn-danger{background:var(--bad);border-color:transparent;color:#fff}
+.btn-danger{background:var(--bad-fill);border-color:transparent;color:#fff}
 .icon-btn{width:34px;height:34px;display:grid;place-items:center;border-radius:50%;color:var(--ink2);transition:background-color .2s,transform .2s}
 .icon-btn:hover{background:var(--surface2);transform:scale(1.1)}
 .rip{position:absolute;border-radius:50%;background:var(--lit);opacity:0;pointer-events:none;animation:k-rip .65s ease-out}
 @keyframes k-rip{from{transform:scale(0);opacity:.5}to{transform:scale(1);opacity:0}}
 html[data-motion=off] .rip{display:none}
-input[type=text],input[type=date],input[type=email],input[type=password],input[type=search],select,textarea{width:100%;padding:11px 14px;border-radius:var(--rs);border:1px solid var(--line2);background:var(--surface);transition:border-color .2s,box-shadow .2s}
-input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gB);box-shadow:0 0 0 3px color-mix(in srgb,var(--gB) 28%,transparent)}
+input[type=text],input[type=date],input[type=email],input[type=password],input[type=search],select,textarea{width:100%;padding:11px 14px;border-radius:var(--rs);border:1px solid var(--ctl);background:var(--surface);transition:border-color .2s,box-shadow .2s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ring);box-shadow:0 0 0 3px color-mix(in srgb,var(--ring) 28%,transparent)}
 textarea{min-height:84px;resize:vertical}
 label,.lab{display:block;font-size:13px;font-weight:700;color:var(--ink2);margin-bottom:6px}
 ::placeholder{color:var(--ink3)}
@@ -174,13 +178,13 @@ input[type=date]{color-scheme:inherit}
 .dd-m{position:absolute;z-index:30;top:calc(100% + 6px);left:0;right:0;margin:0;padding:6px;list-style:none;background:var(--surface);border:1px solid var(--line2);border-radius:var(--rs);box-shadow:0 22px 44px -18px rgba(0,0,0,.55);animation:k-menu .22s cubic-bezier(.2,.8,.2,1)}
 @keyframes k-menu{from{opacity:0;transform:translateY(-6px) scale(.98)}to{opacity:1;transform:none}}
 .dd-m button{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border-radius:8px;font-weight:600}
-.dd-m button:hover,.dd-m button[aria-selected=true]{background:var(--surface2)}
+.dd-m button:hover,.dd-m button[aria-pressed=true]{background:var(--surface2)}
 .sw{width:16px;height:16px;border-radius:50%;flex:none;background:linear-gradient(135deg,var(--s1),var(--s2));box-shadow:0 0 0 2px var(--surface),0 0 0 3px color-mix(in srgb,var(--s2) 65%,transparent)}
 .pop{position:fixed;z-index:60;left:16px;bottom:16px;width:272px;padding:16px;background:var(--surface);border:1px solid var(--line2);border-radius:var(--r);box-shadow:0 26px 60px -20px rgba(0,0,0,.7);display:flex;flex-direction:column;gap:14px;animation:k-menu .24s cubic-bezier(.2,.8,.2,1)}
 .pop .acc{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
 .pop .acc button{display:grid;place-items:center;padding:8px 0;border-radius:var(--rs);border:1px solid var(--line);transition:transform .2s cubic-bezier(.34,1.56,.64,1)}
 .pop .acc button:hover{transform:translateY(-3px) scale(1.06)}
-.pop .acc button[aria-pressed=true]{border-color:var(--gB);box-shadow:0 0 0 2px color-mix(in srgb,var(--gB) 35%,transparent)}
+.pop .acc button[aria-pressed=true]{border-color:var(--ring);box-shadow:0 0 0 2px color-mix(in srgb,var(--ring) 35%,transparent)}
 
 /* ---------- tasks ---------- */
 .list{display:flex;flex-direction:column}
@@ -189,12 +193,12 @@ input[type=date]{color-scheme:inherit}
 .grp h3{font:400 21px var(--f-d)}
 .grp .pc{margin-left:auto;display:flex;align-items:center;gap:10px;color:var(--ink3);font-size:13px;font-weight:700}
 .thread{display:block;height:6px;border-radius:99px;background:var(--surface2);overflow:hidden;min-width:90px;flex:1;max-width:200px}
-.thread i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gA),var(--gB),var(--gA)) var(--shx) 0/200% 100%;box-shadow:0 0 12px -2px color-mix(in srgb,var(--gB) 70%,transparent);transition:width .7s cubic-bezier(.2,.8,.2,1)}
+.thread i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gA),var(--gB),var(--gA)) 0 0/200% 100%;box-shadow:0 0 12px -2px color-mix(in srgb,var(--gB) 70%,transparent);transition:width .7s cubic-bezier(.2,.8,.2,1);animation:k-sheen calc(var(--spd)/1.3) linear infinite}
 .trow{display:grid;grid-template-columns:40px minmax(0,1fr) auto auto;gap:4px 14px;align-items:center;padding:12px 8px 12px 12px;border-top:1px solid var(--line);position:relative;border-radius:var(--rs);transition:background-color .2s,box-shadow .25s,opacity .3s}
-.trow:hover{background:color-mix(in srgb,var(--gM) 7%,transparent);box-shadow:inset 3px 0 0 var(--pc)}
+.trow:hover{background:color-mix(in srgb,var(--gM) 7%,transparent)}
 .trow{--pc:var(--p0)}.trow.p1{--pc:var(--p1)}.trow.p2{--pc:var(--p2)}
 .trow::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:1px}
-.star{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:1.5px solid var(--line2);color:var(--ink3);transition:transform .22s cubic-bezier(.34,1.56,.64,1),background-color .2s,color .2s,border-color .2s}
+.star{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:1.5px solid var(--ctl);color:var(--ink3);transition:transform .22s cubic-bezier(.34,1.56,.64,1),background-color .2s,color .2s,border-color .2s}
 .star svg{transition:transform .4s cubic-bezier(.34,1.56,.64,1)}
 .star:hover{transform:scale(1.18);border-color:var(--gB);color:var(--acc)}
 .star:active{transform:scale(.88)}
@@ -212,7 +216,7 @@ input[type=date]{color-scheme:inherit}
 button.pill:hover{filter:brightness(1.1)}
 .st-doing{color:var(--ok);background:color-mix(in srgb,var(--ok) 15%,transparent)}.st-blocked{color:var(--p1);background:color-mix(in srgb,var(--p1) 16%,transparent)}.st-done{color:var(--ok);background:color-mix(in srgb,var(--ok) 15%,transparent)}
 .due{display:inline-block;min-width:96px;text-align:center;padding:4px 10px;border-radius:8px;font-size:12.5px;font-weight:800;background:var(--surface2);color:var(--ink2);white-space:nowrap}
-.due.warn{color:var(--p1);background:color-mix(in srgb,var(--p1) 15%,transparent)}.due.bad{color:#fff;background:var(--bad)}
+.due.warn{color:var(--p1);background:color-mix(in srgb,var(--p1) 15%,transparent)}.due.bad{color:#fff;background:var(--bad-fill)}
 .pg{display:flex;align-items:center;gap:8px;min-width:96px;font-size:12.5px;font-weight:800;color:var(--ink2)}
 .pg .thread{min-width:54px}
 .dn{padding:8px 15px;border-radius:99px;border:1.5px solid color-mix(in srgb,var(--ok) 70%,transparent);color:var(--ok);font-weight:800;font-size:13.5px;transition:transform .22s cubic-bezier(.34,1.56,.64,1),background-color .2s,color .2s}
@@ -222,11 +226,11 @@ button.pill:hover{filter:brightness(1.1)}
 .trow.is-done .tt{text-decoration:line-through;color:var(--ink3)}
 .subs{grid-column:2/-1;display:flex;flex-direction:column;gap:2px;padding:4px 0 2px 18px}
 .sl{display:flex;align-items:center;gap:10px;color:var(--ink2);font-size:14px;padding:3px 0}.sl.is-done span{text-decoration:line-through;color:var(--ink3)}
-.chk{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--line2);display:grid;place-items:center;color:transparent;flex:none;transition:transform .2s cubic-bezier(.34,1.56,.64,1),background-color .2s}
+.chk{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--ctl);display:grid;place-items:center;color:transparent;flex:none;transition:transform .2s cubic-bezier(.34,1.56,.64,1),background-color .2s}
 .chk:hover{transform:scale(1.2);border-color:var(--gB)}.chk[aria-pressed=true]{background:var(--gM);border-color:var(--gM);color:#fff}
 .todo{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 8px 10px 6px;border-top:1px solid var(--line);border-radius:var(--rs);transition:background-color .2s,opacity .3s}
 .todo:hover{background:color-mix(in srgb,var(--gM) 6%,transparent)}
-.tick{width:28px;height:28px;border-radius:50%;border:2px solid var(--line2);display:grid;place-items:center;color:transparent;position:relative;overflow:hidden;transition:transform .22s cubic-bezier(.34,1.56,.64,1),background-color .2s,border-color .2s,color .2s}
+.tick{width:28px;height:28px;border-radius:50%;border:2px solid var(--ctl);display:grid;place-items:center;color:transparent;position:relative;overflow:hidden;transition:transform .22s cubic-bezier(.34,1.56,.64,1),background-color .2s,border-color .2s,color .2s}
 .tick:hover{transform:scale(1.18);border-color:var(--gB)}
 .tick:active{transform:scale(.9)}
 .tick.ok{background:linear-gradient(135deg,var(--gA),var(--gM));border-color:var(--lit);color:#fff}
@@ -241,7 +245,7 @@ button.pill:hover{filter:brightness(1.1)}
 .swd{display:block;width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,var(--gA),var(--gB));box-shadow:0 0 0 2px var(--surface),0 0 0 3px color-mix(in srgb,var(--gB) 60%,transparent)}
 .tools{display:flex;gap:14px 22px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
 .tools .search{max-width:260px;margin-left:auto}
-.cats{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:thin}
+.cats{display:flex;gap:8px;overflow-x:auto;padding:6px 6px 10px;margin:-6px -6px -2px;scrollbar-width:thin}
 .cats .chipb{white-space:nowrap}
 
 /* ---------- week and check-in ---------- */
@@ -266,7 +270,7 @@ button.pill:hover{filter:brightness(1.1)}
 @keyframes k-pip{from{transform:scaleX(0);opacity:0}}
 .anim .pip.on{transform-origin:left;animation:k-pip .6s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--j)*110ms)}
 .gem{flex:none;filter:drop-shadow(0 0 5px color-mix(in srgb,var(--gB) 55%,transparent))}
-.path{display:inline-flex;align-items:center;gap:6px}
+.path{display:inline}.path .gem{display:inline-block;vertical-align:-2px;margin:0 5px}
 .note{padding:12px 14px;border-radius:var(--rs);background:var(--surface2);color:var(--ink2)}
 
 /* ---------- forms, settings, modal ---------- */
@@ -286,7 +290,7 @@ button.pill:hover{filter:brightness(1.1)}
 .li{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:6px 0}
 .li .t{flex:1;min-width:140px;font-weight:600}.li .m{color:var(--ink3);font-size:13px}
 .hbar{display:grid;grid-template-columns:90px 1fr 70px;gap:10px;align-items:center;padding:5px 0;font-size:13.5px;color:var(--ink2)}
-.chart{width:100%;height:auto}.chart .grid{stroke:var(--line)}.chart .ax{fill:var(--ink3);font-size:11px}.chart .s1{fill:none;stroke:var(--gB);stroke-width:2.2}.chart .s2{fill:none;stroke:var(--ink2);stroke-width:2.2;stroke-dasharray:5 4}.chart .p1{fill:var(--gB)}.chart .p2{fill:var(--ink2)}
+.chart{width:100%;height:auto}.chart .grid{stroke:var(--line)}.chart .ax{fill:var(--ink3);font-size:11px}.chart .s1{fill:none;stroke:var(--ring);stroke-width:2.2}.chart .s2{fill:none;stroke:var(--ink2);stroke-width:2.2;stroke-dasharray:5 4}.chart .p1{fill:var(--ring)}.chart .p2{fill:var(--ink2)}
 .legend{display:flex;gap:16px;color:var(--ink2);font-size:13px;margin-bottom:6px}.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
 .modal{position:fixed;inset:0;z-index:50;display:flex;justify-content:flex-end}
 .m-back{position:absolute;inset:0;background:rgba(10,11,13,.58);animation:k-fade .25s}
@@ -299,7 +303,7 @@ button.pill:hover{filter:brightness(1.1)}
 .sub-row{display:flex;align-items:center;gap:10px;padding:4px 0}.sub-row .t{flex:1}.sub-row.is-done .t{text-decoration:line-through;color:var(--ink3)}
 .log-i{padding:10px 0;border-top:1px solid var(--line)}.log-i time{font-size:12px;color:var(--ink3);font-weight:700}
 .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:80;padding:12px 18px;border-radius:99px;background:var(--ink);color:var(--bg);font-weight:700;box-shadow:0 18px 40px -16px rgba(0,0,0,.7);animation:k-menu .25s}
-.skel{height:64px;border-radius:var(--r);background:linear-gradient(100deg,var(--surface) 30%,var(--surface2) 50%,var(--surface) 70%) var(--shx) 0/250% 100%;border:1px solid var(--line)}
+.skel{height:64px;border-radius:var(--r);background:linear-gradient(100deg,var(--surface) 30%,var(--surface2) 50%,var(--surface) 70%) 0 0/250% 100%;border:1px solid var(--line);animation:k-sheen 1.6s linear infinite}
 .login{max-width:440px;margin:12vh auto 0;padding:0 16px;display:flex;flex-direction:column;gap:20px}
 .err{color:var(--bad);font-weight:700}
 
@@ -327,7 +331,7 @@ html[data-motion=off] *,html[data-motion=off] *::before,html[data-motion=off] *:
   .trow .cells{grid-column:2/-1;flex-wrap:wrap;gap:8px}
   .trow .dn{grid-column:3;grid-row:1}
   .trow .subs{grid-column:2/-1}
-  .setwrap{grid-template-columns:1fr}.setnav{flex-direction:row;overflow-x:auto;position:static}
+  .setwrap{grid-template-columns:1fr}.setnav{flex-direction:row;overflow-x:auto;position:static;padding:6px 6px 10px;margin:-6px -6px 0}
   .two{grid-template-columns:1fr}
   .tools .search{max-width:none;margin-left:0;flex:1 1 100%}
   .day{grid-template-columns:1fr;gap:6px}
@@ -336,6 +340,10 @@ html[data-motion=off] *,html[data-motion=off] *::before,html[data-motion=off] *:
   .m-panel{width:100%;border-left:0}
   .toast{bottom:96px}
   .page-h h1{font-size:30px}
+}
+@media (pointer:coarse){
+  .star{width:42px;height:42px}.trow{grid-template-columns:46px minmax(0,1fr) auto}.tick{width:34px;height:34px}.todo{grid-template-columns:40px minmax(0,1fr) auto}
+  .chk{width:26px;height:26px}.icon-btn{width:42px;height:42px}.dn{padding:11px 17px}.chipb{padding:11px 16px}.tabbar button{font-size:12px;min-height:52px}
 }
 </style>
 </head>
@@ -641,7 +649,7 @@ const pips = (n, max) => '<div class="pips" aria-hidden="true">' + Array.from({l
 function seg(items, cur, act, extra){
   extra = extra || {};
   const i = items.findIndex(x => String(x[0]) === String(cur));
-  return '<div class="seg' + (extra.cls ? ' ' + extra.cls : '') + '" style="--n:' + items.length + ';--i:' + Math.max(i, 0) + '"' + (i < 0 ? ' data-none' : '') + (extra.attr || '') + '><span class="thumb"></span>' +
+  return '<div class="seg' + (extra.cls ? ' ' + extra.cls : '') + '"' + (extra.label ? ' role="group" aria-label="' + h(extra.label) + '"' : '') + ' style="--n:' + items.length + ';--i:' + Math.max(i, 0) + '"' + (i < 0 ? ' data-none' : '') + (extra.attr || '') + '><span class="thumb"></span>' +
     items.map(x => '<button data-act="' + act + '"' + (extra.k ? ' data-k="' + extra.k + '"' : '') + (extra.fast ? ' data-fast="1"' : '') + ' data-v="' + h(x[0]) + '" aria-pressed="' + (i >= 0 && String(x[0]) === String(cur)) + '">' + x[1] + '</button>').join('') + '</div>';
 }
 function setSeg(sg, idx){
@@ -652,15 +660,23 @@ function setSeg(sg, idx){
 }
 const swatch = k => '<i class="sw" style="--s1:' + ACCENTS[k].s[0] + ';--s2:' + ACCENTS[k].s[1] + '"></i>';
 function ddAccent(){
-  return '<div class="dd"><button class="dd-b" data-act="ddToggle" aria-haspopup="listbox" aria-expanded="false" aria-label="Accent colour">' + swatch(S.accent) + ACCENTS[S.accent].n + '</button>' +
-    '<ul class="dd-m" role="listbox" hidden>' + Object.keys(ACCENTS).map(k => '<li><button role="option" data-act="setAccent" data-v="' + k + '" aria-selected="' + (S.accent === k) + '">' + swatch(k) + ACCENTS[k].n + '</button></li>').join('') + '</ul></div>';
+  return '<div class="dd"><button class="dd-b" id="dd-accent" data-act="ddToggle" aria-expanded="false" aria-controls="dd-menu" aria-label="Accent colour">' + swatch(S.accent) + '<span>' + ACCENTS[S.accent].n + '</span></button>' +
+    '<div class="dd-m" id="dd-menu" role="group" aria-label="Accent colour" hidden>' + Object.keys(ACCENTS).map(k => '<button data-act="setAccent" data-v="' + k + '" aria-pressed="' + (S.accent === k) + '">' + swatch(k) + ACCENTS[k].n + '</button>').join('') + '</div></div>';
 }
-const themeSeg = () => seg([['light', ICON.sun + ' Light'], ['dark', ICON.moon + ' Dark'], ['system', ICON.auto + ' Auto']], S.theme, 'setTheme', {fast:true});
-const motionSeg = () => seg([['off', 'Off'], ['subtle', 'Subtle'], ['full', 'Full']], S.motion, 'setMotion', {fast:true});
+function paintAccent(){
+  const b = document.getElementById('dd-accent'); if(b) b.innerHTML = swatch(S.accent) + '<span>' + ACCENTS[S.accent].n + '</span>';
+  [].forEach.call(document.querySelectorAll('[data-act="setAccent"]'), x => x.setAttribute('aria-pressed', String(x.dataset.v === S.accent)));
+}
+const themeSeg = () => seg([['light', ICON.sun + ' Light'], ['dark', ICON.moon + ' Dark'], ['system', ICON.auto + ' Auto']], S.theme, 'setTheme', {fast:true, label:'Colour mode', attr:' data-sync="theme"'});
+const motionSeg = () => seg([['off', 'Off'], ['subtle', 'Subtle'], ['full', 'Full']], S.motion, 'setMotion', {fast:true, label:'Motion', attr:' data-sync="motion"'});
+function syncSegs(){
+  [].forEach.call(document.querySelectorAll('[data-sync="theme"]'), sg => setSeg(sg, ['light', 'dark', 'system'].indexOf(S.theme)));
+  [].forEach.call(document.querySelectorAll('[data-sync="motion"]'), sg => setSeg(sg, ['off', 'subtle', 'full'].indexOf(S.motion)));
+}
 
 function starBtn(t){
   const on = t.focusDate === today();
-  return '<button class="star' + (on ? ' on' : '') + '" data-act="toggleFocus" data-id="' + t.id + '" aria-pressed="' + on + '" aria-label="' + (on ? 'Remove from today’s Priority: ' : 'Add to today’s Priority: ') + h(t.title) + '" title="' + (on ? 'In today’s Priority' : 'Add to today’s Priority') + '">' + ICON.star + '</button>';
+  return '<button class="star' + (on ? ' on' : '') + '" data-act="toggleFocus" data-id="' + t.id + '" aria-pressed="' + on + '" aria-label="Today’s Priority: ' + h(t.title) + '" title="' + (on ? 'In today’s Priority' : 'Add to today’s Priority') + '">' + ICON.star + '</button>';
 }
 function taskRow(t, o){
   o = o || {};
@@ -717,10 +733,10 @@ function ckCard(){
       (ck.note ? '<div class="note">' + h(ck.note) + '</div>' : '') + '</div></section>';
   }
   const d = S.draft || (startDraft(), S.draft);
-  const scale = (k, label) => '<div class="fld"><div class="lab">' + label + '<b data-ckl="' + k + '"></b></div>' + seg([1, 2, 3, 4, 5].map(i => [i, i]), 0, 'ckSet', {cls:'seg-fill seg5', k:k, fast:true, attr:' data-ck="' + k + '"'}) + '</div>';
+  const scale = (k, label) => '<div class="fld"><div class="lab">' + label + '<b data-ckl="' + k + '"></b></div>' + seg([1, 2, 3, 4, 5].map(i => [i, i]), 0, 'ckSet', {cls:'seg-fill seg5', k:k, fast:true, label:label + ', 1 to 5', attr:' data-ck="' + k + '"'}) + '</div>';
   return '<section class="card" id="ck"><div class="ch"><h2>Readiness check-in</h2><span class="sub">A minute to reflect</span></div>' +
     scale('body', 'Body') + scale('mind', 'Mind') +
-    '<div class="fld"><div class="lab">Mode for today</div>' + seg(MODE_KEYS.map(k => [k, MODES[k].n]), '', 'ckMode', {cls:'seg-fill', fast:true, attr:' data-ck="mode"'}) + '<p class="mode-desc" id="ck-desc"></p></div>' +
+    '<div class="fld"><div class="lab">Mode for today</div>' + seg(MODE_KEYS.map(k => [k, MODES[k].n]), '', 'ckMode', {cls:'seg-fill', fast:true, label:'Mode for today', attr:' data-ck="mode"'}) + '<p class="mode-desc" id="ck-desc"></p></div>' +
     '<div class="fld"><label for="ck-note">Note to self (optional)</label><textarea id="ck-note" data-bind="draft.note" placeholder="e.g. Slept badly, but the supplier meeting matters.">' + h(d.note) + '</textarea></div>' +
     '<div class="row"><button class="btn btn-primary" id="ck-save" data-act="saveCheckin" disabled>Save check-in</button>' + (S.ckEdit ? '<button class="btn btn-quiet" data-act="ckCancel">Cancel</button>' : '') + '</div></section>';
 }
@@ -761,8 +777,8 @@ function vArea(a){
   } else list.forEach(x => parts.push(taskRow(x)));
   return '<div class="page-h"><div><h1>' + AREAS[a] + '</h1><p class="date">' + plural(ap.open, 'open task') + ' · ' + ap.pct + '% complete overall</p></div><button class="btn btn-primary" data-act="newIn" data-a="' + a + '">' + ICON.plus.replace('width="22" height="22"', 'width="16" height="16"') + ' New task</button></div>' +
     '<div class="cats" role="group" aria-label="Category">' + chip('all', 'All') + cats.map(p => chip(p.id, p.name)).join('') + (S.tasks.some(x => x.area === a && !proj(x.projectId)) ? chip('__none', 'General') : '') + '</div>' +
-    '<section class="card"><div class="tools"><div class="row"><span class="faint">Sort</span>' + seg([['priority', 'Priority'], ['deadline', 'Deadline'], ['newest', 'Newest']], f.sort, 'areaF', {k:a + '.sort'}) + '</div>' +
-    '<div class="row"><span class="faint">Show</span>' + seg([['open', 'Open'], ['recent', '+ Done 7d'], ['done', 'Done']], f.show, 'areaF', {k:a + '.show'}) + '</div>' +
+    '<section class="card"><div class="tools"><div class="row"><span class="faint">Sort</span>' + seg([['priority', 'Priority'], ['deadline', 'Deadline'], ['newest', 'Newest']], f.sort, 'areaF', {k:a + '.sort', label:'Sort'}) + '</div>' +
+    '<div class="row"><span class="faint">Show</span>' + seg([['open', 'Open'], ['recent', 'Open + last 7 days'], ['done', 'Done']], f.show, 'areaF', {k:a + '.show', label:'Show'}) + '</div>' +
     '<input class="search" id="q-' + a + '" type="search" data-bind="f.' + a + '.q" data-render="1" value="' + h(f.q) + '" placeholder="Search ' + AREAS[a] + ' tasks" aria-label="Search tasks"></div>' +
     (parts.length ? '<div class="list">' + parts.join('') + '</div>' : '<p class="empty">' + (S.tasks.some(x => x.area === a) ? 'No tasks match these filters.' : 'No ' + AREAS[a] + ' tasks yet. Add the first one with New task.') + '</p>') + '</section>';
 }
@@ -786,7 +802,7 @@ function vTodo(){
   const done = S.todos.filter(todoDoneToday).sort((a, b) => (b.doneAt || '').localeCompare(a.doneAt || ''));
   const block = (title, sub, rows, empty) => '<section class="card"><div class="ch"><h2>' + title + '</h2><span class="sub">' + sub + '</span></div>' + (rows.length ? '<div class="list">' + rows.map(todoRow).join('') + '</div>' : '<p class="empty">' + empty + '</p>') + '</section>';
   return head + '<section class="card lit"><div class="todo-add"><input id="td-text" type="text" data-bind="td.text" data-enter="todoAdd" value="' + h(S.td.text) + '" placeholder="Remember to… (press Enter)" aria-label="New to-do" autocomplete="off" style="flex:1 1 260px">' +
-    seg([['today', 'Today'], ['tomorrow', 'Tomorrow'], ['someday', 'Someday']], S.td.day, 'todoDay', {fast:true}) + '<button class="btn btn-primary" data-act="todoAdd">Add</button></div></section>' +
+    seg([['today', 'Today'], ['tomorrow', 'Tomorrow'], ['someday', 'Someday']], S.td.day, 'todoDay', {fast:true, label:'Day'}) + '<button class="btn btn-primary" data-act="todoAdd">Add</button></div></section>' +
     block('Today', plural(todayL.length, 'thing') + ' to remember', todayL, 'Nothing to remember right now.') +
     (soon.length ? block('Coming up', plural(soon.length, 'thing'), soon, '') : '') +
     (some.length ? block('Someday', 'No day yet', some, '') : '') +
@@ -795,23 +811,30 @@ function vTodo(){
 
 /* New Task: big work first, then the task, deadline required */
 const ntValid = () => { const n = S.nt; return !!(n.title.trim() && n.due && (n.cat === '__new' ? n.newCat.trim() : n.cat)); };
+function ntHint(){
+  const n = S.nt, miss = [];
+  if(!(n.cat === '__new' ? n.newCat.trim() : n.cat)) miss.push(n.cat === '__new' ? 'a name for the new big work' : 'the big work');
+  if(!n.title.trim()) miss.push('a task name');
+  if(!n.due) miss.push('a deadline');
+  return miss.length ? 'To create it, add ' + miss.join(', ').replace(/, ([^,]*)$/, ' and $1') + '.' : '';
+}
 function vNew(){
   const n = S.nt, cats = S.projects.filter(p => p.area === n.area && !p.archived).sort((x, y) => (x.name || '').localeCompare(y.name || ''));
   const quick = [['Today', today()], ['Tomorrow', addDays(today(), 1)], ['In a week', addDays(today(), 7)]];
   return '<div class="page-h"><div><h1>New Task</h1><p class="date">Start with the big work, then add the task under it.</p></div></div>' +
     '<section class="card"><div class="form">' +
-    '<div class="sec"><h3>Big work</h3><div class="row">' + seg([['work', 'Company'], ['personal', 'Personal']], n.area, 'ntArea') + '</div>' +
+    '<div class="sec"><h3>Big work</h3><div class="row">' + seg([['work', 'Company'], ['personal', 'Personal']], n.area, 'ntArea', {label:'Area'}) + '</div>' +
     '<div><label for="nt-cat">Category</label><select id="nt-cat" data-bind="nt.cat" data-render="1" aria-label="Category"><option value=""' + (n.cat === '' ? ' selected' : '') + ' disabled>Choose the big work…</option>' + cats.map(p => '<option value="' + p.id + '"' + (n.cat === p.id ? ' selected' : '') + '>' + h(p.name) + '</option>').join('') + '<option value="__new"' + (n.cat === '__new' ? ' selected' : '') + '>＋ New big work…</option></select></div>' +
     (n.cat === '__new' ? '<div><label for="nt-newcat">Name of the new big work</label><input id="nt-newcat" type="text" data-bind="nt.newCat" value="' + h(n.newCat) + '" placeholder="e.g. Demand Plan" autocomplete="off"></div>' : '') + '</div>' +
     '<div class="sec"><h3>Task</h3><div><label for="nt-title">What needs to be done</label><input id="nt-title" type="text" data-bind="nt.title" data-enter="createNew" value="' + h(n.title) + '" placeholder="e.g. Plan production for November" autocomplete="off"></div></div>' +
     '<div class="sec"><h3>Deadline <span class="faint" style="font-weight:600">(required)</span></h3><div class="row"><input id="nt-due" type="date" data-bind="nt.due" value="' + h(n.due) + '" style="max-width:190px" aria-label="Deadline" required><div class="chips">' + quick.map(q => '<button class="chipb" data-act="ntDue" data-v="' + q[1] + '">' + q[0] + '</button>').join('') + '</div></div>' +
-    '<div class="row"><span class="faint">Priority</span>' + seg(PRIO.map((l, i) => [i, l]), n.prio, 'ntPrio') + '</div></div>' +
+    '<div class="row"><span class="faint">Priority</span>' + seg(PRIO.map((l, i) => [i, l]), n.prio, 'ntPrio', {label:'Priority'}) + '</div></div>' +
     (S.subs !== 'hide' ? '<div class="sec"><h3>Subtasks <span class="faint" style="font-weight:600">(optional)</span></h3>' + n.subs.map((s, i) => '<div class="sub-row"><span class="t">' + h(s) + '</span><button class="icon-btn" data-act="ntSubDel" data-i="' + i + '" aria-label="Remove subtask">' + ICON.x + '</button></div>').join('') + '<div class="row" style="flex-wrap:nowrap"><input id="nt-sub" type="text" data-enter="ntSubAdd" placeholder="Add a step, press Enter" aria-label="New subtask" autocomplete="off"><button class="btn btn-sm" data-act="ntSubAdd">Add</button></div></div>' : '') +
     '<div class="sec"><label for="nt-notes">Notes (optional)</label><textarea id="nt-notes" data-bind="nt.notes" placeholder="Details, links, contacts">' + h(n.notes) + '</textarea></div>' +
     '<div class="row"><button class="chipb" data-act="ntPick" aria-pressed="' + n.pick + '">Put it in today’s Priority</button></div>' +
-    '<div class="row"><button class="btn btn-primary" id="nt-go" data-act="createNew"' + (ntValid() ? '' : ' disabled') + '>Create task</button><button class="btn btn-quiet" data-act="ntReset">Clear</button></div></div></section>';
+    '<div class="row"><button class="btn btn-primary" id="nt-go" data-act="createNew"' + (ntValid() ? '' : ' disabled') + '>Create task</button><button class="btn btn-quiet" data-act="ntReset">Clear</button></div><p class="faint" id="nt-hint" role="status">' + ntHint() + '</p></div></section>';
 }
-function ntPaint(){ const b = document.getElementById('nt-go'); if(b) b.disabled = !ntValid(); }
+function ntPaint(){ const b = document.getElementById('nt-go'); if(b) b.disabled = !ntValid(); const t = document.getElementById('nt-hint'); if(t) t.textContent = ntHint(); }
 
 /* Settings */
 function vSettings(){
@@ -820,7 +843,7 @@ function vSettings(){
   if(S.setTab === 'look') body = '<h2>Appearance</h2><div class="srow"><div><b>Colour mode</b><p class="d">Light, dark, or follow the device.</p></div>' + themeSeg() + '</div>' +
     '<div class="srow"><div><b>Accent colour</b><p class="d">The gem that lights the edges, buttons and progress.</p></div>' + ddAccent() + '</div>' +
     '<div class="srow"><div><b>Motion</b><p class="d">Off keeps everything still. Subtle is the default. Full moves the light faster. Devices set to reduce motion start on Off. If a phone ever feels slow, turn it Off.</p></div>' + motionSeg() + '</div>';
-  else if(S.setTab === 'tasks') body = '<h2>Tasks</h2><div class="srow"><div><b>Subtasks</b><p class="d">Show the steps under each task in the lists, or hide them for a shorter view. Progress is still worked out from them.</p></div>' + seg([['show', 'On'], ['hide', 'Off']], S.subs, 'setSubs') + '</div>';
+  else if(S.setTab === 'tasks') body = '<h2>Tasks</h2><div class="srow"><div><b>Subtasks</b><p class="d">Show the steps under each task in the lists, or hide them for a shorter view. Progress is still worked out from them.</p></div>' + seg([['show', 'On'], ['hide', 'Off']], S.subs, 'setSubs', {label:'Subtasks'}) + '</div>';
   else if(S.setTab === 'cats') body = vCats();
   else if(S.setTab === 'history') body = vHistory();
   else body = '<h2>Account</h2><div class="srow"><div><b>Signed in as</b><p class="d">' + h(S.user && S.user.email || 'your account') + '</p></div><button class="btn" data-act="signOut">Sign out</button></div>' +
@@ -833,11 +856,11 @@ function vCats(){
     return '<h3 style="margin:22px 0 6px">' + AREAS[a] + '</h3>' + (ps.length ? ps.map(p => { const pp = projProgress(p); return '<div class="li">' + gemSvg(20) + '<input class="t" type="text" id="pn-' + p.id + '" data-pchg="name" data-id="' + p.id + '" value="' + h(p.name) + '" style="max-width:300px" aria-label="Category name"><span class="m">' + pp.done + '/' + pp.total + ' · ' + pp.pct + '%</span><button class="btn btn-sm btn-quiet" data-act="toggleArchive" data-id="' + p.id + '">' + (p.archived ? 'Restore' : 'Archive') + '</button></div>'; }).join('') : '<p class="empty">No categories yet.</p>');
   };
   return '<h2>Categories</h2><p class="muted" style="margin:6px 0 14px">The big works: Company or Personal, then a category such as Demand Plan, then its tasks.</p><div class="row" style="align-items:flex-end"><div style="flex:1;min-width:200px"><label for="pf-name">New category</label><input id="pf-name" type="text" data-bind="pf.name" data-enter="addProject" value="' + h(S.pf.name) + '" placeholder="Category name"></div>' +
-    seg([['work', 'Company'], ['personal', 'Personal']], S.pf.area, 'pfArea') + '<button class="btn btn-primary" data-act="addProject">Add</button></div>' + block('work') + block('personal');
+    seg([['work', 'Company'], ['personal', 'Personal']], S.pf.area, 'pfArea', {label:'Area'}) + '<button class="btn btn-primary" data-act="addProject">Add</button></div>' + block('work') + block('personal');
 }
 function vHistory(){
   const q = S.hist.q.trim().toLowerCase(), t = today();
-  const head = '<h2>History</h2><div class="row" style="margin:12px 0">' + seg([['tasks', 'Completed tasks'], ['ready', 'Readiness']], S.histTab, 'histTab') + '</div>';
+  const head = '<h2>History</h2><div class="row" style="margin:12px 0">' + seg([['tasks', 'Completed tasks'], ['ready', 'Readiness']], S.histTab, 'histTab', {label:'History view'}) + '</div>';
   if(S.histTab === 'ready') return head + vReady();
   const done = S.tasks.filter(x => x.status === 'done' && x.doneDate && (S.hist.area === 'all' || x.area === S.hist.area) && (!q || (x.title + ' ' + (x.notes || '') + ' ' + (x.log || []).map(l => l.text).join(' ')).toLowerCase().indexOf(q) >= 0));
   const from = q ? '0000' : addDays(t, -S.hist.days), shown = done.filter(x => x.doneDate >= from), groups = {};
@@ -866,7 +889,7 @@ function vReady(){
   const all = S.checkins.filter(c => c.mode && c.date).sort((a, b) => b.date.localeCompare(a.date));
   const last30 = all.filter(c => c.date > addDays(t, -30)), cnt = {}; MODE_KEYS.forEach(k => cnt[k] = last30.filter(c => c.mode === k).length);
   const maxc = Math.max(1, ...MODE_KEYS.map(k => cnt[k]));
-  return (days.some(d => d.body) ? '<div class="legend"><span><i style="background:var(--gB)"></i>Body</span><span><i style="background:var(--ink2)"></i>Mind</span></div>' + chartSvg(days) : '<p class="empty">No check-ins yet. After a few days the chart appears here.</p>') +
+  return (days.some(d => d.body) ? '<div class="legend"><span><i style="background:var(--ring)"></i>Body</span><span><i style="background:var(--ink2)"></i>Mind</span></div>' + chartSvg(days) : '<p class="empty">No check-ins yet. After a few days the chart appears here.</p>') +
     '<h3 style="margin:20px 0 6px">Modes you chose, last 30 days</h3>' + (last30.length ? MODE_KEYS.map(k => '<div class="hbar"><span>' + MODES[k].n + '</span><span class="thread" style="max-width:none"><i style="width:' + (100 * cnt[k] / maxc) + '%"></i></span><span>' + plural(cnt[k], 'day') + '</span></div>').join('') : '<p class="empty">No data yet.</p>') +
     '<h3 style="margin:20px 0 6px">Past check-ins</h3>' + (all.length ? all.slice(0, 14).map(c => '<div class="day"><b>' + fmt(c.date, 'short') + '</b><div><span class="pill">' + MODES[c.mode].n + '</span> <span class="muted">Body ' + c.body + ' · Mind ' + c.mind + '</span>' + (c.note ? '<p class="muted" style="margin-top:4px">' + h(c.note) + '</p>' : '') + (c.wrap ? '<p class="muted" style="margin-top:4px"><b>Closing note:</b> ' + h(c.wrap) + '</p>' : '') + '</div></div>').join('') : '<p class="empty">Nothing yet.</p>');
 }
@@ -908,8 +931,8 @@ function vModal(){
   const logs = (t.log || []).slice().reverse().map(l => '<div class="log-i"><time>' + (l.at ? new Date(l.at).toLocaleString('en-GB', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) : fmt(l.d, 'dm')) + '</time><p>' + h(l.text) + '</p></div>').join('');
   return '<div class="m-back" data-act="closeModal"></div><div class="m-panel" role="dialog" aria-modal="true" aria-label="Task details">' +
     '<div class="m-head"><input class="m-title" id="m-title" type="text" data-mchg="title" value="' + h(t.title) + '" aria-label="Task title"><button class="icon-btn" data-act="closeModal" aria-label="Close">' + ICON.x + '</button></div><div class="m-body">' +
-    '<div class="sec"><div class="lab">Status</div>' + seg(Object.keys(STATUS).map(k => [k, STATUS[k]]), t.status, 'mStatus') + '</div>' +
-    '<div class="sec"><div class="lab">Priority</div>' + seg(PRIO.map((l, i) => [i, l]), t.priority || 0, 'mPrio') + '</div>' +
+    '<div class="sec"><div class="lab">Status</div>' + seg(Object.keys(STATUS).map(k => [k, STATUS[k]]), t.status, 'mStatus', {label:'Status'}) + '</div>' +
+    '<div class="sec"><div class="lab">Priority</div>' + seg(PRIO.map((l, i) => [i, l]), t.priority || 0, 'mPrio', {label:'Priority'}) + '</div>' +
     '<div class="two"><div><label for="m-target">Category</label><select id="m-target" data-mchg="target">' + opts + '</select></div><div><label for="m-due">Deadline (required)</label><input id="m-due" type="date" data-mchg="due" value="' + h(t.due || '') + '" required></div></div>' +
     '<div><label for="m-pct">Progress <span id="m-pct-out">' + pct + '%</span>' + (hasSub ? ' (from subtasks)' : '') + '</label><input id="m-pct" type="range" min="0" max="100" step="5" value="' + pct + '" data-mchg="pct"' + (hasSub || t.status === 'done' ? ' disabled' : '') + '></div>' +
     '<div class="sec"><div class="lab">Subtasks</div>' + (t.subtasks || []).map((s, i) => '<div class="sub-row ' + (s.done ? 'is-done' : '') + '"><button class="chk" data-act="subToggle" data-i="' + i + '" aria-pressed="' + !!s.done + '" aria-label="Toggle subtask">' + ICON.check + '</button><span class="t">' + h(s.t) + '</span><button class="icon-btn" data-act="subDel" data-i="' + i + '" aria-label="Delete subtask">' + ICON.x + '</button></div>').join('') +
@@ -919,8 +942,8 @@ function vModal(){
     '<div class="row" style="border-top:1px solid var(--line);padding-top:14px">' + starBtn(t) + '<span class="muted">' + (t.focusDate === today() ? 'In today’s Priority' : 'Add to today’s Priority') + '</span><span style="flex:1"></span>' +
     (S.askDelete ? '<button class="btn btn-sm btn-danger" data-act="delTask">Confirm delete</button><button class="btn btn-sm" data-act="askDelete">Cancel</button>' : '<button class="btn btn-sm btn-quiet" data-act="askDelete">Delete task</button>') + '</div></div></div>';
 }
-function openModal(id){ S.modal = id; S.askDelete = false; modalEl.hidden = false; modalEl.innerHTML = vModal(); document.documentElement.style.overflow = 'hidden'; const f = modalEl.querySelector('.m-title'); if(f) f.focus({preventScroll:true}); }
-function closeModal(){ S.modal = null; modalEl.hidden = true; modalEl.innerHTML = ''; document.documentElement.style.overflow = ''; }
+function openModal(id){ modalFrom = document.activeElement; S.modal = id; S.askDelete = false; modalEl.hidden = false; modalEl.innerHTML = vModal(); document.documentElement.style.overflow = 'hidden'; const f = modalEl.querySelector('.m-title'); if(f) f.focus({preventScroll:true}); }
+function closeModal(){ const had = S.modal; S.modal = null; modalEl.hidden = true; modalEl.innerHTML = ''; document.documentElement.style.overflow = ''; if(had && modalFrom && document.contains(modalFrom) && modalFrom.focus) modalFrom.focus(); modalFrom = null; }
 function renderModal(){
   if(!S.modal) return;
   const ae = document.activeElement;
@@ -973,8 +996,9 @@ function applyLook(){
   d.setAttribute('data-mode', S.theme === 'system' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : S.theme);
 }
 try{ matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if(S.theme === 'system') applyLook(); }); }catch(e){}
-function openPop(){ S.popOpen = true; popEl.hidden = false; popEl.innerHTML = popHtml(); }
-function closePop(){ S.popOpen = false; popEl.hidden = true; popEl.innerHTML = ''; }
+let popFrom = null, modalFrom = null;
+function openPop(){ popFrom = document.activeElement; S.popOpen = true; popEl.hidden = false; popEl.innerHTML = popHtml(); const f = popEl.querySelector('button'); if(f) f.focus(); }
+function closePop(restore){ S.popOpen = false; popEl.hidden = true; popEl.innerHTML = ''; if(restore && popFrom && document.contains(popFrom)) popFrom.focus(); popFrom = null; }
 function closeDD(){ [].forEach.call(document.querySelectorAll('.dd-m'), m => { m.hidden = true; const b = m.parentNode.querySelector('.dd-b'); if(b) b.setAttribute('aria-expanded', 'false'); }); }
 function slideTo(b){ const sg = b.closest('.seg'); if(!sg || !sg.querySelector('.thumb')) return; setSeg(sg, [].indexOf.call(sg.querySelectorAll('button'), b)); }
 
@@ -986,10 +1010,10 @@ const findT = b => S.tasks.find(x => x.id === b.dataset.id);
 const ACT = {
   go(b){ if(b.dataset.tab) S.setTab = b.dataset.tab; go(b.dataset.v); },
   nav(b){ if(b.dataset.tab) S.setTab = b.dataset.tab; go(b.dataset.v); },
-  togglePop(){ S.popOpen ? closePop() : openPop(); },
-  setTheme(b){ S.theme = b.dataset.v; lsSet('pd.theme', S.theme); applyLook(); },
-  setAccent(b){ S.accent = b.dataset.v; lsSet('pd.accent', S.accent); applyLook(); closeDD(); if(S.popOpen) popEl.innerHTML = popHtml(); if(S.view === 'settings') render(); },
-  setMotion(b){ S.motion = b.dataset.v; lsSet('pd.motion', S.motion); applyLook(); },
+  togglePop(){ S.popOpen ? closePop(true) : openPop(); },
+  setTheme(b){ S.theme = b.dataset.v; lsSet('pd.theme', S.theme); applyLook(); syncSegs(); },
+  setAccent(b){ S.accent = b.dataset.v; lsSet('pd.accent', S.accent); applyLook(); paintAccent(); const inMenu = !!b.closest('.dd-m'); closeDD(); if(inMenu){ const t = document.getElementById('dd-accent'); if(t) t.focus(); } },
+  setMotion(b){ S.motion = b.dataset.v; lsSet('pd.motion', S.motion); applyLook(); syncSegs(); },
   setSubs(b){ S.subs = b.dataset.v; lsSet('pd.subs', S.subs); render(); },
   ddToggle(b){ const m = b.parentNode.querySelector('.dd-m'), open = m.hidden; closeDD(); if(open){ m.hidden = false; b.setAttribute('aria-expanded', 'true'); } },
   setTab(b){ S.setTab = b.dataset.v; S.askClear = false; render(); },
@@ -1104,9 +1128,9 @@ document.addEventListener('click', e => {
   const f = ACT[b.dataset.act]; if(!f) return;
   e.preventDefault();
   const sg = b.closest('.seg');
-  if(sg && sg.querySelector('.thumb') && b.getAttribute('aria-pressed') !== 'true' && motionOn()){
+  if(sg && sg.querySelector('.thumb') && b.getAttribute('aria-pressed') !== 'true'){
     slideTo(b);
-    if(b.dataset.fast) f(b, e); else setTimeout(() => f(b, e), 260);
+    if(b.dataset.fast || !motionOn()) f(b, e); else setTimeout(() => f(b, e), 260);
   } else f(b, e);
 });
 document.addEventListener('pointerdown', e => {
@@ -1135,7 +1159,12 @@ document.addEventListener('change', e => {
   if(el.dataset.pchg === 'name'){ const v = el.value.trim(); if(v) write('projects/' + el.dataset.id, 'update', {name:v.slice(0, 80)}); }
 });
 document.addEventListener('keydown', e => {
-  if(e.key === 'Escape'){ if(S.modal) closeModal(); else if(S.popOpen) closePop(); else closeDD(); return; }
+  if(e.key === 'Escape'){
+    if(S.modal) closeModal();
+    else if(S.popOpen) closePop(true);
+    else { const open = document.querySelector('.dd-m:not([hidden])'); if(open){ const t = open.parentNode.querySelector('.dd-b'); closeDD(); if(t) t.focus(); } }
+    return;
+  }
   if(e.key === 'Enter' && !e.isComposing && e.target.dataset && e.target.dataset.enter && e.target.tagName === 'INPUT'){ e.preventDefault(); ACT[e.target.dataset.enter](e.target); }
 });
 function fromHash(){ const v = location.hash.slice(1); if(!S.user) return; if(v === 'express') return go('dash', true); if(ROUTES.indexOf(v) >= 0 && v !== S.view) go(v, true); }

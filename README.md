@@ -1,14 +1,24 @@
 # Progress Dashboard
 
-A private task and progress dashboard: a morning overview, a readiness check-in, today's Priority, and every task grouped by category.
+A private task and progress dashboard with six pages:
+
+| Page | What it is for |
+|---|---|
+| Dashboard | Today's Priority, Week Progress (percent complete and what needs handling this week), and the readiness check-in |
+| To-Do | Small reminders ("call my manager", "buy moisturizer"): no category, no progress |
+| Company, Personal | All tasks grouped by category (the "big work"), with a category filter. Every row has a star to pick it for Today's Priority and a Done button |
+| New Task | Pick the big work first, then the task. A deadline is required |
+| Settings | Appearance (light, dark, auto; accent gem; motion), subtasks on or off, categories, history, account |
+
+The look is dark grey and ivory with one accent gem you choose (Ruby, Sapphire, Emerald, Amethyst, Topaz) shown as slowly moving ambient light. Motion can be turned Off or Full in Settings.
 
 It is one static page (`index.html`) served by GitHub Pages. Your data is **not** in this repository. It lives in a Supabase database behind a sign-in, and Row Level Security means each account only ever sees its own rows.
 
 ## How it fits together
 
 ```
-Browser (this page) ──► Supabase: sign-in + Postgres (tasks, projects, checkins)
-AI assistants (later) ──► an MCP server ──► the same Supabase database
+Browser (this page) ──► Supabase: sign-in + Postgres (tasks, projects, checkins, todos)
+AI assistants ──► an MCP server ──► the same Supabase database
 ```
 
 - `index.html`: the whole app. Uses `@supabase/supabase-js` from a CDN.
@@ -29,7 +39,7 @@ Never put a Supabase `secret` / `service_role` key, a database password, or any 
 
 ## AI gateway (MCP)
 
-`supabase/functions/mcp/` is a small MCP server (a Supabase Edge Function) that lets AI assistants such as Claude, Codex, Hermes and ChatGPT read and manage tasks through a fixed set of tools: overview, list/get tasks, add/update/complete tasks, subtasks, progress log, categories, the daily readiness check-in (`save_checkin`, so an assistant can interview the owner in the morning and record it), and prioritising (`suggest_priorities` explains a score for every task; `set_task_priorities` and `set_todays_priority` apply a ranking once the owner agrees). `delete_task` keeps a copy in a trash table (`deleted_tasks`) and `restore_task` brings it back.
+`supabase/functions/mcp/` is a small MCP server (a Supabase Edge Function) that lets AI assistants such as Claude, Codex, Hermes and ChatGPT read and manage tasks through a fixed set of tools: overview, list/get tasks, add/update/complete tasks, subtasks, progress log, categories, the daily readiness check-in (`save_checkin`, so an assistant can interview the owner in the morning and record it), and prioritising (`suggest_priorities` explains a score for every task; `set_task_priorities` and `set_todays_priority` apply a ranking once the owner agrees). `delete_task` keeps a copy in a trash table (`deleted_tasks`) and `restore_task` brings it back. The To-Do list has `list_todos`, `add_todo` and `update_todo`. A task created by an assistant must have a category and a deadline, and a deadline cannot be cleared.
 
 - Each assistant gets its own revocable token (`supabase/ai_gateway.sql`). Only a hash is stored. A token can be read-only.
 - The database key used by the function stays inside the function and is never sent to an AI.
