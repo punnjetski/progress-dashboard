@@ -21,7 +21,7 @@ A progress tracker that shows all the owner's work in hand and helps them decide
 Replaces the paper notebook with one place for Company and Personal work, kept in sync with AI secretaries that can add and update tasks by voice or text.
 
 ## Operating Context
-- Structure: Area (Company or Personal) > Category (the "big work", e.g. Demand Plan) > Task > optional subtasks. Every task lives under a category and must have a deadline.
+- Structure: Area (Company or Personal) > Category (the "big work", e.g. Quarterly Planning) > Task > optional subtasks. Every task lives under a category and must have a deadline.
 - Daily rhythm: morning readiness check-in (body and mind 1-5, mode Push / Standard / Maintain / Relax; the mode is a reflection, never a limit on how many tasks to take), then work from Today's Priority.
 - Pages: Dashboard (Today's Priority, Week Progress, Readiness check-in), Company, Personal, New Task, Settings (subtasks on/off, History, Categories, theme, sign out).
 - Sign-in required; data in Supabase; light, dark and auto theme.

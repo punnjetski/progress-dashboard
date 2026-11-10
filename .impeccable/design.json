@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-10T19:00:00Z",
+  "title": "Design System: Progress Dashboard",
+  "extensions": {
+    "colorMeta": {
+      "ruby-mid": { "role": "primary", "displayName": "Ruby Mid (default gem)", "canonical": "#C8102E", "tonalRamp": ["#3A0610", "#5E0A1B", "#850D25", "#A50E28", "#C8102E", "#E0405A", "#F04A68", "#F9B3C0"] },
+      "ruby-bright-night": { "role": "primary", "displayName": "Ruby Bright (night light)", "canonical": "#FF5C7A", "tonalRamp": ["#3A0610", "#650C20", "#8F1230", "#B30F2E", "#D4153A", "#FF5C7A", "#FF93A8", "#FFD0D9"] },
+      "night-ground": { "role": "neutral", "displayName": "Night Ground", "canonical": "#1D1F23", "tonalRamp": ["#141619", "#1D1F23", "#272A30", "#2F333A", "#383C44", "#4B505A", "#7C8088", "#A6A399"] },
+      "ivory-ground": { "role": "neutral", "displayName": "Ivory Ground", "canonical": "#F6F2E7", "tonalRamp": ["#23262B", "#464A52", "#62666E", "#8A8678", "#CFC8B4", "#E2DCCB", "#EFEADB", "#F6F2E7"] },
+      "priority-amber": { "role": "secondary", "displayName": "Priority Amber", "canonical": "#8A4D00", "tonalRamp": ["#3A2000", "#5C3300", "#8A4D00", "#B8700A", "#D98F20", "#F0B04A", "#F7CE8A", "#FCE9C6"] },
+      "priority-signal": { "role": "secondary", "displayName": "Signal Orange", "canonical": "#AE3206", "tonalRamp": ["#3A1000", "#6A1F03", "#AE3206", "#D4491A", "#FF6A33", "#FF8E60", "#FFB596", "#FFDCCC"] },
+      "ok": { "role": "secondary", "displayName": "Done Green", "canonical": "#1B7550", "tonalRamp": ["#08261B", "#0F4A33", "#1B7550", "#2C9A6E", "#45B88A", "#5CC9A0", "#9BE0C4", "#D3F3E5"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Page titles in Marcellus." },
+      "headline": { "displayName": "Headline", "purpose": "Card, group and drawer headings in Marcellus; also large numerals in accent." },
+      "title": { "displayName": "Title", "purpose": "Task titles and form section headings in Manrope bold." },
+      "body": { "displayName": "Body", "purpose": "Default operable text in Manrope with tabular numerals." },
+      "label": { "displayName": "Label", "purpose": "Pills, due chips, metadata; sentence case, never uppercase." }
+    },
+    "shadows": [
+      { "name": "lift", "value": "0 1px 0 rgba(255,255,255,.6) inset, 0 10px 26px -18px rgba(35,38,43,.35)", "purpose": "Resting cards, light mode. Night: 0 1px 0 rgba(255,255,255,.04) inset, 0 14px 30px -20px rgba(0,0,0,.7)." },
+      { "name": "card-glow", "value": "0 0 calc(8px + 22px*var(--pulse)) -8px color-mix(in srgb, var(--gA) 60%, transparent)", "purpose": "Pulsing gem glow around cards." },
+      { "name": "gem-under-fill", "value": "0 10px 22px -12px var(--gM)", "purpose": "Under primary buttons, active nav, thumb." },
+      { "name": "menu", "value": "0 22px 44px -18px rgba(0,0,0,.55)", "purpose": "Dropdown menus." },
+      { "name": "popover", "value": "0 26px 60px -20px rgba(0,0,0,.7)", "purpose": "Appearance popover." },
+      { "name": "drawer", "value": "-30px 0 70px -30px rgba(0,0,0,.6)", "purpose": "Task drawer." }
+    ],
+    "motion": [
+      { "name": "ease-spring", "value": "cubic-bezier(.34,1.56,.64,1)", "purpose": "Control hover, press and pop overshoot." },
+      { "name": "ease-out-soft", "value": "cubic-bezier(.2,.8,.2,1)", "purpose": "Entrances, menus, progress width." },
+      { "name": "thumb-glide", "value": ".38s cubic-bezier(.3,1.35,.5,1)", "purpose": "Segmented control thumb." },
+      { "name": "spd-subtle", "value": "9s", "purpose": "Ambient cycle (default Motion: Subtle). Card pulse is half; wash is three times." },
+      { "name": "spd-full", "value": "4s", "purpose": "Ambient cycle for Motion: Full." },
+      { "name": "motion-off", "value": "html[data-motion=off]", "purpose": "Freezes lights at a fixed pose and disables all animation and transitions." }
+    ],
+    "breakpoints": [
+      { "name": "wide-grid", "value": "1100px" },
+      { "name": "phone", "value": "900px" },
+      { "name": "row-container", "value": "780px (container query on .card)" },
+      { "name": "coarse-pointer", "value": "pointer:coarse" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Filled gem gradient action: save, add, New Task.",
+      "html": "<button class=\"ds-btn ds-btn-primary\">Add task</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 18px;border-radius:10px;border:1px solid transparent;font:700 15px Manrope,system-ui,sans-serif;color:#fff;cursor:pointer;transition:transform .22s cubic-bezier(.34,1.56,.64,1),box-shadow .22s}.ds-btn-primary{background:linear-gradient(135deg,var(--gA,#A50E28),var(--gM,#C8102E));box-shadow:0 10px 22px -12px var(--gM,#C8102E)}.ds-btn:hover{transform:translateY(-2px) scale(1.03)}.ds-btn:active{transform:scale(.95)}.ds-btn:focus-visible{outline:2px solid var(--gB,#F04A68);outline-offset:2px}"
+    },
+    {
+      "name": "Default Button",
+      "kind": "button",
+      "refersTo": "button-default",
+      "description": "Neutral raised action.",
+      "html": "<button class=\"ds-btn-def\">Cancel</button>",
+      "css": ".ds-btn-def{padding:10px 18px;border-radius:10px;border:1px solid #CFC8B4;background:#EFEADB;color:#23262B;font:700 15px Manrope,system-ui,sans-serif;cursor:pointer;transition:transform .22s cubic-bezier(.34,1.56,.64,1),border-color .2s}.ds-btn-def:hover{transform:translateY(-2px) scale(1.03);border-color:var(--gB,#F04A68)}.ds-btn-def:active{transform:scale(.95)}.ds-btn-def:focus-visible{outline:2px solid var(--gA,#A50E28);outline-offset:2px}"
+    },
+    {
+      "name": "Task Row",
+      "kind": "custom",
+      "refersTo": "card",
+      "description": "Star, title with priority dot, chips, Done.",
+      "html": "<div class=\"ds-trow\"><button class=\"ds-star\" aria-label=\"Star\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"currentColor\"><path d=\"M12 2l3 7 7 .6-5.3 4.7 1.6 7.2L12 17.8 5.7 21.5l1.6-7.2L2 9.6 9 9z\"/></svg></button><div><div class=\"ds-tt\">Send quarterly report</div><div class=\"ds-ts\">Company</div></div><span class=\"ds-pill\">Doing</span><button class=\"ds-dn\">Done</button></div>",
+      "css": ".ds-trow{display:grid;grid-template-columns:40px minmax(0,1fr) auto auto;gap:4px 14px;align-items:center;padding:12px 8px 12px 12px;border-top:1px solid #E2DCCB;color:#23262B;font-family:Manrope,system-ui,sans-serif}.ds-star{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:1.5px solid #8A8678;color:#62666E;background:none;cursor:pointer;transition:transform .22s cubic-bezier(.34,1.56,.64,1)}.ds-star:hover{transform:scale(1.18);border-color:var(--gB,#F04A68)}.ds-star:focus-visible,.ds-dn:focus-visible{outline:2px solid var(--gA,#A50E28);outline-offset:2px}.ds-tt{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15.5px}.ds-tt::before{content:'';width:9px;height:9px;border-radius:50%;background:#8A4D00;box-shadow:0 0 0 3px rgba(138,77,0,.22)}.ds-ts{color:#62666E;font-size:13px;padding-left:18px}.ds-pill{padding:4px 11px;border-radius:99px;font-size:12.5px;font-weight:800;color:#1B7550;background:rgba(27,117,80,.15)}.ds-dn{padding:8px 15px;border-radius:99px;border:1.5px solid rgba(27,117,80,.7);color:#1B7550;background:none;font:800 13.5px Manrope,system-ui,sans-serif;cursor:pointer;transition:transform .22s cubic-bezier(.34,1.56,.64,1),background-color .2s,color .2s}.ds-dn:hover{transform:translateY(-3px) scale(1.07);background:#1B7550;color:#FFFEF9}.ds-dn:active{transform:scale(.9)}"
+    },
+    {
+      "name": "Lit Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Surface card with gem-tinted border and glow; the travelling edge light is a 2px conic ring on a pseudo-element.",
+      "html": "<div class=\"ds-card\"><h2>Today's Priority</h2><p>Three things that matter.</p></div>",
+      "css": ".ds-card{position:relative;padding:22px 24px;border-radius:16px;background:#FFFEF9;color:#23262B;font:15px/1.55 Manrope,system-ui,sans-serif;border:1px solid color-mix(in srgb,var(--gB,#F04A68) 30%,#E2DCCB);box-shadow:0 1px 0 rgba(255,255,255,.6) inset,0 10px 26px -18px rgba(35,38,43,.35),0 0 20px -8px color-mix(in srgb,var(--gA,#A50E28) 60%,transparent)}.ds-card h2{margin:0 0 6px;font:400 22px/1.12 Marcellus,Georgia,serif}.ds-card p{margin:0}"
+    },
+    {
+      "name": "Summary Tile",
+      "kind": "custom",
+      "refersTo": "tile",
+      "description": "Check-in result tile: label, Marcellus numeral in accent, pips.",
+      "html": "<div class=\"ds-tile\"><span class=\"ds-k\">Body</span><span class=\"ds-n\">4<small>/5</small></span><div class=\"ds-pips\"><i class=\"on\"></i><i class=\"on\"></i><i class=\"on\"></i><i class=\"on\"></i><i></i></div></div>",
+      "css": ".ds-tile{display:flex;flex-direction:column;gap:7px;padding:14px;border-radius:10px;background:#EFEADB;border:1px solid color-mix(in srgb,var(--gB,#F04A68) 40%,#E2DCCB);font-family:Manrope,system-ui,sans-serif;max-width:200px}.ds-k{font-size:12.5px;font-weight:800;color:#62666E}.ds-n{font:400 40px/1 Marcellus,Georgia,serif;color:var(--gA,#A50E28)}.ds-n small{font-size:16px;color:#62666E;margin-left:2px}.ds-pips{display:flex;gap:5px}.ds-pips i{flex:1;height:6px;border-radius:99px;background:#E2DCCB}.ds-pips i.on{background:linear-gradient(90deg,var(--gA,#A50E28),var(--gB,#F04A68))}"
+    },
+    {
+      "name": "Segmented Control",
+      "kind": "custom",
+      "refersTo": "button-primary",
+      "description": "Tray with a gem thumb that glides to the pressed option.",
+      "html": "<div class=\"ds-seg\"><span class=\"ds-thumb\"></span><button aria-pressed=\"true\">Push</button><button aria-pressed=\"false\">Standard</button><button aria-pressed=\"false\">Relax</button></div>",
+      "css": ".ds-seg{position:relative;display:inline-grid;grid-template-columns:repeat(3,1fr);padding:3px;border-radius:13px;background:#EFEADB;border:1px solid #E2DCCB;font-family:Manrope,system-ui,sans-serif}.ds-thumb{position:absolute;top:3px;bottom:3px;left:3px;width:calc((100% - 6px)/3);border-radius:10px;background:linear-gradient(135deg,var(--gA,#A50E28),var(--gM,#C8102E));box-shadow:0 6px 16px -8px var(--gM,#C8102E)}.ds-seg button{position:relative;z-index:1;padding:9px 12px;border:0;background:none;border-radius:10px;font-weight:700;color:#464A52;cursor:pointer}.ds-seg button[aria-pressed=true]{color:#fff}.ds-seg button:focus-visible{outline:2px solid var(--gA,#A50E28);outline-offset:2px}"
+    },
+    {
+      "name": "Filter Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Pill filter that fills with the gem gradient when pressed.",
+      "html": "<button class=\"ds-chip\" aria-pressed=\"true\">All</button> <button class=\"ds-chip\" aria-pressed=\"false\">Finance</button>",
+      "css": ".ds-chip{padding:8px 15px;border-radius:99px;border:1px solid #CFC8B4;background:#FFFEF9;color:#464A52;font:700 15px Manrope,system-ui,sans-serif;cursor:pointer;transition:transform .2s cubic-bezier(.34,1.56,.64,1)}.ds-chip:hover{transform:translateY(-2px);border-color:var(--gB,#F04A68)}.ds-chip[aria-pressed=true]{background:linear-gradient(135deg,var(--gA,#A50E28),var(--gM,#C8102E));border-color:transparent;color:#fff}.ds-chip:focus-visible{outline:2px solid var(--gA,#A50E28);outline-offset:2px}"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Field with strong control border and ring focus.",
+      "html": "<label class=\"ds-lab\">Task</label><input class=\"ds-input\" type=\"text\" placeholder=\"What needs doing\">",
+      "css": ".ds-lab{display:block;font:700 13px Manrope,system-ui,sans-serif;color:#464A52;margin-bottom:6px}.ds-input{width:100%;padding:11px 14px;border-radius:10px;border:1px solid #8A8678;background:#FFFEF9;color:#23262B;font:15px Manrope,system-ui,sans-serif;transition:border-color .2s,box-shadow .2s}.ds-input:focus{outline:none;border-color:var(--gA,#A50E28);box-shadow:0 0 0 3px color-mix(in srgb,var(--gA,#A50E28) 28%,transparent)}.ds-input::placeholder{color:#62666E}"
+    },
+    {
+      "name": "Rail Navigation Item",
+      "kind": "nav",
+      "refersTo": "rail",
+      "description": "Dark rail item; current page is a gem gradient.",
+      "html": "<div class=\"ds-rail\"><button class=\"ds-nav\" aria-current=\"page\">Dashboard</button><button class=\"ds-nav\">To-Do</button></div>",
+      "css": ".ds-rail{width:248px;padding:16px;background:#2B2E33;display:flex;flex-direction:column;gap:4px}.ds-nav{display:flex;align-items:center;padding:11px 14px;border:0;border-radius:10px;background:none;color:#C9C5B8;font:600 15px Manrope,system-ui,sans-serif;text-align:left;cursor:pointer;transition:transform .22s cubic-bezier(.34,1.56,.64,1),background-color .2s,color .2s}.ds-nav:hover{color:#F3EEDF;background:rgba(255,255,255,.06);transform:translateX(4px)}.ds-nav[aria-current=page]{color:#fff;background:linear-gradient(90deg,var(--gA,#A50E28),var(--gM,#C8102E));box-shadow:0 8px 20px -12px var(--gM,#C8102E)}.ds-nav:focus-visible{outline:2px solid var(--gB,#F04A68);outline-offset:2px}"
+    },
+    {
+      "name": "Toast",
+      "kind": "custom",
+      "refersTo": "toast",
+      "description": "Inverted pill confirmation.",
+      "html": "<div class=\"ds-toast\">Task marked done</div>",
+      "css": ".ds-toast{display:inline-block;padding:12px 18px;border-radius:99px;background:#23262B;color:#F6F2E7;font:700 15px Manrope,system-ui,sans-serif;box-shadow:0 18px 40px -16px rgba(0,0,0,.7)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Night Cabin",
+    "overview": "A signed-in task tracker used several times a day by one owner, built like the cabin of a fine car at night: dark grey and ivory surfaces, warm ivory text, and a single gemstone accent that shows up as thin light along edges rather than as decoration over content. The owner picks the gem (Ruby by default, Sapphire, Emerald, Amethyst, Topaz); everything accent-coloured follows it. Light and dark are both first-class, as is a system mode. Motion is a setting (Off, Subtle 9s, Full 4s).",
+    "keyCharacteristics": [
+      "Dark grey and ivory ground; accent only as light, thin fills and focus.",
+      "One owner-selected gem, three tokens per gem (deep, mid, bright) in each mode.",
+      "Priority colour (neutral, amber, signal orange) is a separate channel from the accent.",
+      "Marcellus for headings and large numerals; Manrope for everything operable.",
+      "Springy micro-interactions on every control; all of it switches off with Motion Off."
+    ],
+    "rules": [
+      { "name": "The Light Not Paint Rule", "body": "The gem appears as edge light, thin lines, glows and filled controls. It is never a large flat panel behind content.", "section": "colors" },
+      { "name": "The Two Channels Rule", "body": "Accent means the app's light or an active control. Priority and state colours (amber, signal orange, green, danger) carry meaning and never change with the gem.", "section": "colors" },
+      { "name": "The Ring Rule", "body": "Focus ring, input focus border and chart primary line use one colour (--ring). Control borders use the stronger --ctl neutral so unfilled controls stay visible.", "section": "colors" },
+      { "name": "The Operable Sans Rule", "body": "Anything clickable, typeable or status-bearing is Manrope. Marcellus is for headings and large numerals only.", "section": "typography" },
+      { "name": "The Slow Light Rule", "body": "Ambient light travels at 4s or slower per cycle, moves via transform or registered custom properties only, and must have a static Off pose.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do take every accent from --gA, --gM, --gB so the owner's gem choice carries everywhere; use deep to mid for filled controls and bright for light.",
+      "Do keep priority and state colours independent of the accent.",
+      "Do give every ambient or micro-interaction animation a Motion Off pose and respect prefers-reduced-motion.",
+      "Do use Marcellus only for headings and big numerals, Manrope for everything else.",
+      "Do let cards respond to their own width with container queries.",
+      "Do put white text only on gem gradients and danger fills; keep unfilled control borders on --ctl."
+    ],
+    "donts": [
+      "Don't paint large flat panels or text blocks in the gem colour; it is light and thin fills.",
+      "Don't use the accent to signal priority, status or danger.",
+      "Don't add hard offset shadows or glitter-style decoration.",
+      "Don't let ambient light animate layout properties; transform and registered custom properties only.",
+      "Don't keep the pulse or sheen on touch devices (pointer:coarse)."
+    ]
+  }
+}
