@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/try-colors.html"
+        ],
+        "createdAt": "2026-11-10T10:11:51.176Z",
+        "reason": "user confirmed: asked for luxury-car ambient edge light with glow on Sapphire and Ruby themes"
+      }
+    ]
+  }
+}

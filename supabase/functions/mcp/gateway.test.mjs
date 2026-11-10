@@ -23,6 +23,13 @@ const T = {
     {id: 'tx', user_id: 'u2', title: 'USER 2 PRIVATE TASK', area: 'work', project_id: 'p_x', status: 'todo', priority: 2, due: null, pct: 0, notes: '', subtasks: [], log: [], focus_date: null, done_date: null, created_at: '2026-10-01T00:00:00Z'}
   ],
   deleted_tasks: [],
+  todos: [
+    {id: 'd1', user_id: 'u1', text: 'Call my manager', day: '2026-11-02', done: false, done_at: null, created_at: '2026-11-01T01:00:00Z'},
+    {id: 'd2', user_id: 'u1', text: 'Buy moisturizer', day: '2026-11-01', done: false, done_at: null, created_at: '2026-11-01T02:00:00Z'},
+    {id: 'd3', user_id: 'u1', text: 'Book a haircut', day: '2026-11-05', done: false, done_at: null, created_at: '2026-11-01T03:00:00Z'},
+    {id: 'd4', user_id: 'u1', text: 'Look into a standing desk', day: null, done: false, done_at: null, created_at: '2026-11-01T04:00:00Z'},
+    {id: 'dx', user_id: 'u2', text: 'USER 2 PRIVATE TODO', day: '2026-11-02', done: false, done_at: null, created_at: '2026-11-01T05:00:00Z'}
+  ],
   checkins: [{user_id: 'u1', date: '2026-11-02', body: 2, mind: 2, mode: 'relax', note: '', wrap: ''}, {user_id: 'u2', date: '2026-11-02', body: 5, mind: 5, mode: 'push', note: 'u2', wrap: ''}]
 };
 function from(t){
@@ -61,7 +68,7 @@ ok(r.status === 200 && r.json.result.protocolVersion === '2025-03-26' && r.json.
 r = await post({jsonrpc: '2.0', method: 'notifications/initialized'}, TOKENS.rw); ok(r.status === 202, 'notification returns 202', r);
 r = await post({jsonrpc: '2.0', id: 2, method: 'tools/list'}, TOKENS.rw);
 const names = r.json.result.tools.map(t => t.name);
-ok(names.length === 19 && names.includes('delete_task') && names.includes('save_checkin') && names.includes('restore_task'), 'tool list has 19', names);
+ok(names.length === 22 && ['delete_task', 'save_checkin', 'restore_task', 'list_todos', 'add_todo', 'update_todo'].every(n => names.includes(n)), 'tool list has 22', names);
 ok(r.json.result.tools.find(t => t.name === 'delete_task').annotations.destructiveHint === true && r.json.result.tools.find(t => t.name === 'update_task').annotations.destructiveHint === false, 'only delete_task is flagged destructive');
 ok(r.json.result.tools.every(t => t.inputSchema.type === 'object' && t.annotations), 'schemas and annotations present');
 ok(r.json.result.tools.find(t => t.name === 'list_tasks').annotations.readOnlyHint === true && r.json.result.tools.find(t => t.name === 'add_task').annotations.readOnlyHint === false, 'readOnlyHint set correctly');
@@ -138,13 +145,13 @@ for(const bad of ['pd_' + 'A'.repeat(48), 'pd_' + 'a'.repeat(47), 'pd_' + 'a'.re
 }
 r = await post({jsonrpc: '2.0', id: 1, method: 'tools/call', params: {name: 'add_task', arguments: {title: 'x'.repeat(150000)}}}, TOKENS.rw); ok(r.status === 413, 'oversized request -> 413', r.status);
 r = await post(Array.from({length: 21}, (_, i) => ({jsonrpc: '2.0', id: i + 1, method: 'ping'})), TOKENS.rw); ok(r.status === 400, 'batch over 20 rejected', r.status);
-c = await call('add_task', {title: 'many', subtasks: Array.from({length: 101}, (_, i) => 's' + i)}); ok(c.err && /At most 100/.test(c.data), 'subtask cap enforced');
-c = await call('add_task', {title: 'x'.repeat(301)}); ok(c.err && /too long/.test(c.data), 'title length cap');
+c = await call('add_task', {title: 'many', category: 'Demand Plan', due: 'today', subtasks: Array.from({length: 101}, (_, i) => 's' + i)}); ok(c.err && /At most 100/.test(c.data), 'subtask cap enforced');
+c = await call('add_task', {title: 'x'.repeat(301), category: 'Demand Plan', due: 'today'}); ok(c.err && /too long/.test(c.data), 'title length cap');
 c = await call('log_progress', {id: 't2', text: 'y'.repeat(2001)}); ok(c.err && /too long/.test(c.data), 'log length cap');
 c = await call('nope_tool', {}); ok(c.raw.error && c.raw.error.code === -32602, 'unknown tool is a protocol error');
 { // database failures must not leak internal details to the AI
   const failing = {from: t => { const real = from(t); const o = Object.create(real); o.insert = () => ({then: (res) => res({error: {message: 'SECRET internal detail: relation "tasks" violates something'}})}); return o; }};
-  const rr = await handle(new Request('https://x.test/', {method: 'POST', headers: {'content-type': 'application/json', authorization: 'Bearer ' + TOKENS.rw}, body: JSON.stringify({jsonrpc: '2.0', id: 5, method: 'tools/call', params: {name: 'add_task', arguments: {title: 'will fail'}}})}), {db: failing, tz: 'Asia/Bangkok', now: deps.now});
+  const rr = await handle(new Request('https://x.test/', {method: 'POST', headers: {'content-type': 'application/json', authorization: 'Bearer ' + TOKENS.rw}, body: JSON.stringify({jsonrpc: '2.0', id: 5, method: 'tools/call', params: {name: 'add_task', arguments: {title: 'will fail', category: 'Demand Plan', due: 'today'}}})}), {db: failing, tz: 'Asia/Bangkok', now: deps.now});
   const txt = await rr.text(); ok(!txt.includes('SECRET') && /Something went wrong/.test(txt), 'database errors are not leaked to the AI', txt.slice(0, 200));
 }
 
@@ -152,13 +159,16 @@ c = await call('nope_tool', {}); ok(c.raw.error && c.raw.error.code === -32602, 
 c = await call('add_task', {title: 'Send Q4 forecast', category: 'Demand Plan', priority: 'High', due: 'tomorrow', subtasks: ['Draft', 'Review'], add_to_todays_priority: true});
 const added = T.tasks.find(t => t.title === 'Send Q4 forecast');
 ok(c.data.ok && added && added.user_id === 'u1' && added.project_id === 'p_dp' && added.area === 'work' && added.priority === 1 && added.due === '2026-11-03' && added.focus_date === '2026-11-02' && added.updated_by === 'codex' && added.subtasks.length === 2 && added.status === 'todo', 'add_task row', added);
-c = await call('add_task', {title: 'x', category: 'Nope'}); ok(c.err && /No category named/.test(c.data) && /Demand Plan/.test(c.data), 'unknown category explains options', c.data);
-c = await call('add_task', {title: 'Buy gift', area: 'Personal', due: '2026-12-01'}); ok(c.data.ok && T.tasks.at(-1).area === 'personal' && T.tasks.at(-1).project_id === null, 'uncategorised personal task');
-c = await call('add_task', {title: 'bad date', due: '12/01/2026'}); ok(c.err && /YYYY-MM-DD/.test(c.data), 'bad date rejected');
-c = await call('add_task', {title: '   '}); ok(c.err, 'empty title rejected');
-c = await call('update_task', {id: 't1', status: 'doing', priority: 'Urgent', due: '', category: 'Investment'});
+c = await call('add_task', {title: 'x', category: 'Nope', due: 'today'}); ok(c.err && /No category named/.test(c.data) && /Demand Plan/.test(c.data), 'unknown category explains options', c.data);
+c = await call('add_task', {title: 'Buy gift', category: 'Investment', due: '2026-12-01'}); ok(c.data.ok && T.tasks.at(-1).area === 'personal' && T.tasks.at(-1).project_id === 'p_inv', 'personal task under its category');
+c = await call('add_task', {title: 'No deadline', category: 'Demand Plan'}); ok(c.err && /deadline/.test(c.data), 'add_task without a deadline is refused', c.data);
+c = await call('add_task', {title: 'No category', due: 'today'}); ok(c.err && /category/.test(c.data), 'add_task without a category is refused', c.data);
+c = await call('update_task', {id: 't2', due: ''}); ok(c.err && /deadline/.test(c.data) && T.tasks.find(t => t.id === 't2').due === '2026-11-03', 'a deadline cannot be cleared', c.data);
+c = await call('add_task', {title: 'bad date', category: 'Demand Plan', due: '12/01/2026'}); ok(c.err && /YYYY-MM-DD/.test(c.data), 'bad date rejected');
+c = await call('add_task', {title: '   ', category: 'Demand Plan', due: 'today'}); ok(c.err, 'empty title rejected');
+c = await call('update_task', {id: 't1', status: 'doing', priority: 'Urgent', due: '2026-11-20', category: 'Investment'});
 const t1 = T.tasks.find(t => t.id === 't1');
-ok(c.data.ok && t1.status === 'doing' && t1.priority === 2 && t1.due === null && t1.project_id === 'p_inv' && t1.area === 'personal' && t1.updated_by === 'codex' && t1.touch_date === '2026-11-02', 'update_task fields, clears due, moves category/area', t1);
+ok(c.data.ok && t1.status === 'doing' && t1.priority === 2 && t1.due === '2026-11-20' && t1.project_id === 'p_inv' && t1.area === 'personal' && t1.updated_by === 'codex' && t1.touch_date === '2026-11-02', 'update_task fields, new deadline, moves category/area', t1);
 c = await call('update_task', {id: 't1'}); ok(c.err && /Nothing to change/.test(c.data), 'empty update rejected');
 c = await call('update_task', {id: 'tx', title: 'hacked'}); ok(c.err && T.tasks.find(t => t.id === 'tx').title === 'USER 2 PRIVATE TASK', 'cannot modify user 2 task', c.data);
 c = await call('complete_task', {id: 't3'}); const t3 = T.tasks.find(t => t.id === 't3'); ok(c.data.task.status === 'done' && t3.pct === 100 && t3.done_date === '2026-11-02', 'complete_task', t3);
@@ -171,7 +181,7 @@ c = await call('add_category', {name: 'AI Project', area: 'Company'}); ok(c.data
 c = await call('add_category', {name: 'ai project', area: 'Company'}); ok(c.err && /already exists/.test(c.data), 'duplicate category rejected');
 
 // read-only token
-for(const [name, args] of [['add_task', {title: 'nope'}], ['update_task', {id: 't1', title: 'nope'}], ['complete_task', {id: 't1'}], ['add_subtask', {id: 't1', text: 'n'}], ['set_subtask_done', {id: 't1', index: 0}], ['log_progress', {id: 't1', text: 'n'}], ['add_category', {name: 'n', area: 'Company'}], ['save_checkin', {body: 3, mind: 3, mode: 'standard'}], ['delete_task', {id: 't1'}], ['restore_task', {id: 't1'}]]){
+for(const [name, args] of [['add_task', {title: 'nope'}], ['update_task', {id: 't1', title: 'nope'}], ['complete_task', {id: 't1'}], ['add_subtask', {id: 't1', text: 'n'}], ['set_subtask_done', {id: 't1', index: 0}], ['log_progress', {id: 't1', text: 'n'}], ['add_category', {name: 'n', area: 'Company'}], ['save_checkin', {body: 3, mind: 3, mode: 'standard'}], ['delete_task', {id: 't1'}], ['restore_task', {id: 't1'}], ['add_todo', {text: 'n'}], ['update_todo', {id: 'd1', done: true}]]){
   c = await call(name, args, TOKENS.ro); ok(c.err && /read-only/.test(c.data), 'read-only token blocked on ' + name, c.data);
 }
 ok(!T.tasks.some(t => t.title === 'nope'), 'nothing written by read-only token');
@@ -216,6 +226,31 @@ c = await call('list_deleted_tasks', {}, TOKENS.ro); ok(c.data.deleted.length ==
   ok(viaKey.status === 200, 'x-api-key works');
   const pf = await handle(new Request('https://x.test/', {method: 'OPTIONS', headers: {'access-control-request-headers': 'authorization, accept, x-anything'}}), deps);
   ok(pf.status === 204 && pf.headers.get('access-control-allow-headers') === 'authorization, accept, x-anything', 'preflight echoes requested headers');
+}
+
+// to-do list
+c = await call('list_todos', {});
+ok(c.data.today.length === 2 && c.data.today[0].text === 'Buy moisturizer' && c.data.today[0].carried_over_from === '2026-11-01' && c.data.coming_up.length === 1 && c.data.someday.length === 1 && c.data.done_today.length === 0, 'list_todos groups today, coming up and someday', c.data);
+ok(!JSON.stringify(c.data).includes('USER 2'), "list_todos never shows another user's items");
+c = await call('add_todo', {text: 'Pick up the dry cleaning'}); const nt = T.todos.find(x => x.text === 'Pick up the dry cleaning');
+ok(c.data.ok && nt && nt.user_id === 'u1' && nt.day === '2026-11-02' && nt.done === false && nt.updated_by === 'codex', 'add_todo defaults to today', nt);
+c = await call('add_todo', {text: 'Tomorrow thing', day: 'tomorrow'}); ok(T.todos.find(x => x.text === 'Tomorrow thing').day === '2026-11-03', 'add_todo tomorrow');
+c = await call('add_todo', {text: 'Whenever thing', day: 'someday'}); ok(T.todos.find(x => x.text === 'Whenever thing').day === null, 'add_todo someday has no day');
+c = await call('add_todo', {text: '   '}); ok(c.err, 'empty to-do rejected');
+c = await call('add_todo', {text: 'y'.repeat(301)}); ok(c.err && /too long/.test(c.data), 'to-do length cap');
+c = await call('add_todo', {text: 'bad day', day: '12/01/2026'}); ok(c.err && /YYYY-MM-DD/.test(c.data), 'bad day rejected');
+c = await call('update_todo', {id: 'd1', done: true}); const d1 = T.todos.find(x => x.id === 'd1');
+ok(c.data.ok && d1.done === true && d1.done_at === '2026-11-02T05:00:00.000Z' && d1.updated_by === 'codex', 'update_todo ticks off', d1);
+c = await call('list_todos', {}); ok(c.data.done_today.length === 1 && c.data.done_today[0].id === 'd1' && c.data.today.every(x => x.id !== 'd1'), 'done item moves to done_today');
+c = await call('update_todo', {id: 'd1', done: false}); ok(T.todos.find(x => x.id === 'd1').done === false && T.todos.find(x => x.id === 'd1').done_at === null, 'update_todo reopens');
+c = await call('update_todo', {id: 'd3', day: 'today', text: 'Book a haircut this week'}); ok(T.todos.find(x => x.id === 'd3').day === '2026-11-02' && T.todos.find(x => x.id === 'd3').text === 'Book a haircut this week', 'update_todo edits text and day');
+c = await call('update_todo', {id: 'dx', done: true}); ok(c.err && T.todos.find(x => x.id === 'dx').done === false, 'cannot change user 2 to-do');
+c = await call('update_todo', {id: 'd3'}); ok(c.err && /Nothing to change/.test(c.data), 'empty to-do update rejected');
+c = await call('list_todos', {}, TOKENS.ro); ok(c.data.today && !c.err, 'read-only token can list to-dos');
+{ // table not created yet
+  const noTable = {from: t => { if(t !== 'todos') return from(t); const o = {select: () => o, eq: () => o, order: () => o, range: () => o, then: res => res({data: null, error: {message: 'relation "public.todos" does not exist'}})}; return o; }};
+  const rr = await handle(new Request('https://x.test/', {method: 'POST', headers: {'content-type': 'application/json', authorization: 'Bearer ' + TOKENS.rw}, body: JSON.stringify({jsonrpc: '2.0', id: 7, method: 'tools/call', params: {name: 'list_todos', arguments: {}}})}), {db: noTable, tz: 'Asia/Bangkok', now: deps.now});
+  const txt = await rr.text(); ok(/not set up in the database yet/.test(txt) && !/relation/.test(txt.replace('not set up', '')), 'missing to-do table gives a plain message', txt.slice(0, 200));
 }
 
 console.log(bad ? `\n${bad} of ${n} checks FAILED` : `\nALL ${n} CHECKS PASSED`);

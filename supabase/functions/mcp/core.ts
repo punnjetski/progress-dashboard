@@ -24,7 +24,8 @@ const INSTRUCTIONS = [
   'Structure: Area (Company or Personal) > Category (e.g. "Demand Plan") > Task > optional subtasks.',
   'Priority levels: Normal, High, Urgent. Statuses: todo, doing, blocked, done. Dates are YYYY-MM-DD in the owner\'s timezone.',
   '"Today\'s Priority" is the list the owner picks to focus on today. Only add to it when asked.',
-  'Call list_categories before creating or moving a task so you reuse an existing category instead of inventing a new one.',
+  'Call list_categories before creating or moving a task so you reuse an existing category instead of inventing a new one. Every task needs a category and a deadline.',
+  'Two kinds of items: tasks are real work that takes time (a category, a deadline, progress). To-dos are small reminders such as "call my manager" or "buy moisturizer": use add_todo for those, list_todos to read them, and update_todo to tick one off or move it to another day.',
   'You may rename, re-prioritise, re-status, complete and (when the owner asks) delete tasks. delete_task moves a task to a trash from which restore_task can bring it back; prefer update_task when a rename or status change is all that is needed.',
   'Morning check-in: if the owner asks you to run it, ask them how their body and mind feel (1 = very low, 5 = great) and which mode they want today (push, standard, maintain, relax), then record the answers with save_checkin. The mode is a reflection for the owner, not a limit on how many tasks to suggest.',
   'To rank work, call suggest_priorities. It explains each score. Then, only if the owner agrees, apply it with set_task_priorities (levels) or set_todays_priority (the focus list).',
@@ -332,17 +333,18 @@ const TOOLS: Tool[] = [
   },
   {
     name: 'add_task', write: true,
-    description: 'Create a task. Use a category from list_categories. Optional subtasks and deadline.',
+    description: 'Create a task under a category (the "big work"). A category and a deadline are required. Use a category from list_categories, or create one with add_category first. For small reminders that are not real work, use add_todo instead.',
     inputSchema: obj({
-      title: S('Short task title'), category: S('Existing category name. Leave out for an uncategorised task.'),
-      area: S('Company or Personal. Only needed when no category is given (default Company).'),
-      priority: S('Normal (default), High or Urgent'), due: S('YYYY-MM-DD, "today" or "tomorrow"'),
+      title: S('Short task title'), category: S('Existing category name from list_categories'),
+      priority: S('Normal (default), High or Urgent'), due: S('Deadline: YYYY-MM-DD, "today" or "tomorrow". Required.'),
       notes: S('Optional notes'), subtasks: {type: 'array', items: {type: 'string'}, description: 'Optional subtask titles'},
       add_to_todays_priority: {type: 'boolean', description: 'Also put it on today\'s Priority list. Only if the owner asked.'}
-    }, ['title']),
+    }, ['title', 'category', 'due']),
     async run(a, ctx) {
       const {projects} = await loadTasksAndCats(ctx);
-      const cat = a.category ? findCategory(a.category, projects) : null;
+      if(a.due === undefined || a.due === null || a.due === '') throw new ToolError('Every task needs a deadline (due). Ask the owner for one.');
+      if(!a.category) throw new ToolError('Every task belongs to a category. Use list_categories, or add_category first.');
+      const cat = findCategory(a.category, projects);
       if(Array.isArray(a.subtasks) && a.subtasks.length > MAX_SUBTASKS) throw new ToolError(`At most ${MAX_SUBTASKS} subtasks per task.`);
       const subs = (Array.isArray(a.subtasks) ? a.subtasks : []).map((s: any) => ({t: clean(s, 'subtask', 300), done: false}));
       const row = {
@@ -363,7 +365,7 @@ const TOOLS: Tool[] = [
     description: 'Change fields of an existing task. Only the fields you pass are changed. To mark done you can also use complete_task.',
     inputSchema: obj({
       id: S('Task id'), title: S('New title'), status: S('todo, doing, blocked or done'), priority: S('Normal, High or Urgent'),
-      due: S('YYYY-MM-DD, "today", "tomorrow", or empty string to clear'), notes: S('Replaces the notes'),
+      due: S('New deadline: YYYY-MM-DD, "today" or "tomorrow". A deadline cannot be removed.'), notes: S('Replaces the notes'),
       category: S('Move to this existing category. Empty string = uncategorised.'), area: S('Company or Personal (only for uncategorised tasks)'),
       progress_pct: {type: 'integer', description: '0-100. Ignored when the task has subtasks (progress comes from them).'},
       add_to_todays_priority: {type: 'boolean', description: 'true = add to today\'s Priority, false = remove'}
@@ -377,7 +379,7 @@ const TOOLS: Tool[] = [
         if(s === 'done'){ p.pct = 100; p.done_date = ctx.today; } else if(t.status === 'done'){ p.done_date = null; if(t.pct === 100) p.pct = 50; }
       }
       if(a.priority !== undefined) p.priority = parsePriority(a.priority);
-      if(a.due !== undefined) p.due = parseDate(a.due, ctx, 'due');
+      if(a.due !== undefined){ p.due = parseDate(a.due, ctx, 'due'); if(!p.due) throw new ToolError('A task always needs a deadline, so it cannot be cleared. Give a new date instead.'); }
       if(a.notes !== undefined) p.notes = String(a.notes).slice(0, 5000);
       if(a.category !== undefined){
         if(a.category === '' || a.category === null){ p.project_id = null; if(a.area) p.area = parseArea(a.area); }
@@ -536,8 +538,69 @@ const TOOLS: Tool[] = [
       await ctx.db.from('deleted_tasks').delete().eq('user_id', ctx.uid).eq('task_id', a.id);
       return {ok: true, task: shape(row, projects, ctx)};
     }
+  },
+  {
+    name: 'list_todos', write: false,
+    description: 'The owner\'s To-Do list: small reminders, not projects. Returns open items grouped as today (including ones carried over from earlier days), coming_up and someday, plus what was done today.',
+    inputSchema: obj({}),
+    async run(_a, ctx) {
+      const rows = await fetchTodos(ctx);
+      const item = (x: any) => ({id: x.id, text: x.text, day: x.day || null, ...(x.day && x.day < ctx.today && !x.done ? {carried_over_from: x.day} : {})});
+      const open = rows.filter(x => !x.done), byDay = (p: any, q: any) => String(p.day || '9999').localeCompare(String(q.day || '9999')) || String(p.created_at || '').localeCompare(String(q.created_at || ''));
+      return {
+        today: open.filter(x => x.day && x.day <= ctx.today).sort(byDay).map(item),
+        coming_up: open.filter(x => x.day && x.day > ctx.today).sort(byDay).map(item),
+        someday: open.filter(x => !x.day).sort(byDay).map(item),
+        done_today: rows.filter(x => x.done && x.done_at && todayStr(new Date(x.done_at), ctx.tz) === ctx.today).map(item)
+      };
+    }
+  },
+  {
+    name: 'add_todo', write: true,
+    description: 'Add a small reminder to the To-Do list, for things like "call my manager" or "buy moisturizer". Not for real work with a deadline and progress (use add_task for that).',
+    inputSchema: obj({text: S('What to remember'), day: S('"today" (default), "tomorrow", a date YYYY-MM-DD, or "someday" for no particular day')}, ['text']),
+    async run(a, ctx) {
+      await fetchTodos(ctx);
+      const row = {id: crypto.randomUUID(), user_id: ctx.uid, text: clean(a.text, 'text', 300), day: todoDay(a.day, ctx), done: false, done_at: null, created_at: ctx.nowIso, updated_by: ctx.actor};
+      const {error} = await ctx.db.from('todos').insert(row);
+      if(error) throw new Error(error.message);
+      return {ok: true, todo: {id: row.id, text: row.text, day: row.day}};
+    }
+  },
+  {
+    name: 'update_todo', write: true,
+    description: 'Change a To-Do item: tick it off (done: true), reopen it, edit the text, or move it to another day.',
+    inputSchema: obj({id: S('To-Do id from list_todos'), done: {type: 'boolean', description: 'true = done, false = open again'}, text: S('New text'), day: S('"today", "tomorrow", a date YYYY-MM-DD, or "someday"')}, ['id']),
+    async run(a, ctx) {
+      const t = (await fetchTodos(ctx)).find(x => x.id === a.id);
+      if(!t) throw new ToolError(`No to-do with id ${JSON.stringify(a.id)}. Use list_todos to find the id.`);
+      const p: any = {};
+      if(a.text !== undefined) p.text = clean(a.text, 'text', 300);
+      if(a.day !== undefined) p.day = todoDay(a.day, ctx);
+      if(a.done !== undefined){ p.done = !!a.done; p.done_at = a.done ? ctx.nowIso : null; }
+      if(!Object.keys(p).length) throw new ToolError('Nothing to change. Pass done, text or day.');
+      p.updated_by = ctx.actor;
+      const {error} = await ctx.db.from('todos').update(p).eq('id', t.id).eq('user_id', ctx.uid);
+      if(error) throw new Error(error.message);
+      const n = Object.assign({}, t, p);
+      return {ok: true, todo: {id: n.id, text: n.text, day: n.day || null, done: !!n.done}};
+    }
   }
 ];
+
+/* To-Do items live in their own table. If it has not been created yet, say so plainly instead of failing blindly. */
+async function fetchTodos(ctx: Ctx) {
+  try{ return await fetchTable(ctx, 'todos'); }
+  catch(e: any){
+    if(/relation|does not exist|schema cache|todos/i.test(String(e && e.message))) throw new ToolError('The To-Do list is not set up in the database yet. Ask the owner to re-run supabase/schema.sql in the Supabase SQL Editor.');
+    throw e;
+  }
+}
+function todoDay(v: any, ctx: Ctx): string | null {
+  if(v === undefined) return ctx.today;
+  if(typeof v === 'string' && ['someday', 'none', 'no day', ''].includes(v.trim().toLowerCase())) return null;
+  return parseDate(v, ctx, 'day');
+}
 
 // ---------- JSON-RPC over HTTP ----------
 const publicTool = (t: Tool) => ({

@@ -57,6 +57,20 @@ create table if not exists public.checkins (
   primary key (user_id, date)
 );
 
+-- To-Do: small reminders ("call my manager", "buy moisturizer"). Not projects: no category, no progress.
+create table if not exists public.todos (
+  id          text primary key default gen_random_uuid()::text,
+  user_id     uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  text        text not null check (char_length(text) between 1 and 300),
+  day         date,                                                            -- the day to remember it; empty = someday
+  done        boolean not null default false,
+  done_at     timestamptz,
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now(),
+  updated_by  text not null default 'app'
+);
+create index if not exists todos_user_done_idx on public.todos (user_id, done);
+
 -- 2. Keep updated_at honest -----------------------------------------------
 
 create or replace function public.touch_updated_at() returns trigger
@@ -72,12 +86,15 @@ drop trigger if exists touch_tasks on public.tasks;
 create trigger touch_tasks before update on public.tasks for each row execute function public.touch_updated_at();
 drop trigger if exists touch_checkins on public.checkins;
 create trigger touch_checkins before update on public.checkins for each row execute function public.touch_updated_at();
+drop trigger if exists touch_todos on public.todos;
+create trigger touch_todos before update on public.todos for each row execute function public.touch_updated_at();
 
 -- 3. Privacy: each signed-in user can only see and change their own rows ----
 
 alter table public.projects enable row level security;
 alter table public.tasks    enable row level security;
 alter table public.checkins enable row level security;
+alter table public.todos    enable row level security;
 
 drop policy if exists "own projects" on public.projects;
 create policy "own projects" on public.projects for all to authenticated
@@ -91,14 +108,18 @@ drop policy if exists "own checkins" on public.checkins;
 create policy "own checkins" on public.checkins for all to authenticated
   using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 
+drop policy if exists "own todos" on public.todos;
+create policy "own todos" on public.todos for all to authenticated
+  using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
+
 -- 3b. Permissions on the tables (separate from the row rules above) --------
 -- Newer Supabase projects do not hand these out automatically. Signed-in users get what the app needs;
 -- strangers (the anon role) get nothing; the server-side key used by the AI gateway gets full access.
 
 grant usage on schema public to anon, authenticated, service_role;
-revoke all on public.projects, public.tasks, public.checkins from anon;
-grant select, insert, update, delete on public.projects, public.tasks, public.checkins to authenticated;
-grant all on public.projects, public.tasks, public.checkins to service_role;
+revoke all on public.projects, public.tasks, public.checkins, public.todos from anon;
+grant select, insert, update, delete on public.projects, public.tasks, public.checkins, public.todos to authenticated;
+grant all on public.projects, public.tasks, public.checkins, public.todos to service_role;
 
 -- 4. Live updates: the app refreshes when an AI changes something ----------
 
@@ -107,4 +128,5 @@ begin
   begin alter publication supabase_realtime add table public.tasks;    exception when duplicate_object then null; end;
   begin alter publication supabase_realtime add table public.projects; exception when duplicate_object then null; end;
   begin alter publication supabase_realtime add table public.checkins; exception when duplicate_object then null; end;
+  begin alter publication supabase_realtime add table public.todos;    exception when duplicate_object then null; end;
 end $$;
