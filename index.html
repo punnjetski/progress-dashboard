@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="referrer" content="no-referrer">
 <meta name="color-scheme" content="dark light">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://jmeadtbypbxuorsszvip.supabase.co wss://jmeadtbypbxuorsszvip.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; manifest-src 'self'; worker-src 'self'; connect-src https://jmeadtbypbxuorsszvip.supabase.co wss://jmeadtbypbxuorsszvip.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'">
 <script>if (window.top !== window.self) { document.documentElement.style.display = 'none'; }</script>
 <script>
 /* Appearance is a per-device setting. Apply it before first paint so the page never flashes the wrong colours. */
@@ -22,6 +22,13 @@
 }catch(e){}})();
 </script>
 <title>Progress Dashboard</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1D1F23">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Progress">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231D1F23'/%3E%3Cpath d='M16 6l7 10-7 10-7-10z' fill='%23D4153A'/%3E%3Cpath d='M16 6l7 10h-14z' fill='%23FF5C7A'/%3E%3C/svg%3E">
 <style>
 [hidden]{display:none!important}
@@ -244,8 +251,17 @@ button.pill:hover{filter:brightness(1.1)}
 .swd{display:block;width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,var(--gA),var(--gB));box-shadow:0 0 0 2px var(--surface),0 0 0 3px color-mix(in srgb,var(--gB) 60%,transparent)}
 .tools{display:flex;gap:14px 22px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
 .tools .search{max-width:260px;margin-left:auto}
-.cats{display:flex;gap:8px;overflow-x:auto;padding:6px 6px 10px;margin:-6px -6px -2px;scrollbar-width:thin}
-.cats .chipb{white-space:nowrap}
+.filter-btn{gap:8px}
+.fbadge{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:linear-gradient(135deg,var(--gA),var(--gM));color:#fff;font-size:12px;font-weight:800}
+.fsheet{position:fixed;inset:0;z-index:55;display:flex;align-items:center;justify-content:center}
+.f-panel{position:relative;width:min(520px,calc(100% - 32px));max-height:min(640px,calc(100% - 48px));background:var(--surface);border:1px solid var(--line2);border-radius:var(--r);display:flex;flex-direction:column;box-shadow:0 30px 70px -24px rgba(0,0,0,.7);animation:k-menu .28s cubic-bezier(.2,.8,.2,1);outline:0}
+.f-panel .m-body{flex:1;min-height:0}
+.f-panel .chips{display:flex;flex-wrap:wrap;gap:8px}
+.f-panel .search{max-width:none;width:100%}
+.f-panel .seg{display:grid}
+.f-grab{display:none}
+.f-foot{display:flex;gap:10px;justify-content:space-between;padding:12px 22px calc(16px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}
+.f-foot .btn-primary{flex:1;max-width:280px}
 
 /* ---------- week and check-in ---------- */
 .wk{display:flex;align-items:center;gap:16px;margin:4px 0 14px}
@@ -296,6 +312,7 @@ button.pill:hover{filter:brightness(1.1)}
 @keyframes k-fade{from{opacity:0}}
 .m-panel{position:relative;width:min(540px,100%);height:100%;background:var(--surface);border-left:1px solid var(--line2);display:flex;flex-direction:column;animation:k-slide .35s cubic-bezier(.2,.8,.2,1);box-shadow:-30px 0 70px -30px rgba(0,0,0,.6)}
 @keyframes k-slide{from{transform:translateX(40px);opacity:0}}
+@keyframes k-sheet{from{transform:translateY(40px);opacity:0}}
 .m-head{display:flex;gap:10px;align-items:center;padding:18px 18px 10px}
 .m-title{font:400 22px var(--f-d);border-color:transparent;background:transparent;padding:8px 10px}
 .m-body{padding:6px 22px 28px;overflow:auto;display:flex;flex-direction:column;gap:18px}
@@ -337,6 +354,10 @@ html[data-motion=off] *,html[data-motion=off] *::before,html[data-motion=off] *:
   .pop{left:12px;right:12px;top:64px;bottom:auto;width:auto}
   .mtop{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
   .m-panel{width:100%;border-left:0}
+  .fsheet{align-items:flex-end}
+  .f-panel{width:100%;max-height:88dvh;border-radius:22px 22px 0 0;border-bottom:0;animation:k-sheet .32s cubic-bezier(.2,.8,.2,1)}
+  .f-grab{display:block;width:40px;height:4px;border-radius:99px;background:var(--line2);margin:10px auto 0}
+  .f-foot{padding-left:18px;padding-right:18px}
   .toast{bottom:96px}
   .page-h h1{font-size:30px}
 }
@@ -351,6 +372,7 @@ html[data-motion=off] *,html[data-motion=off] *::before,html[data-motion=off] *:
 <div id="root"><p style="padding:24px;color:var(--ink2)">Loading Progress Dashboard…</p></div>
 <div id="modal" class="modal" hidden></div>
 <div id="toast" class="toast" role="status" hidden></div>
+<div id="fsheet" class="fsheet" hidden></div>
 <div id="pop" hidden></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js" integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK" crossorigin="anonymous"></script>
@@ -398,6 +420,7 @@ const ICON = {
   todo:svg('<path d="M9 6.5h11M9 12h11M9 17.5h11M3.8 6.3l1.4 1.4 2.4-2.8M3.8 11.8l1.4 1.4 2.4-2.8M3.8 17.3l1.4 1.4 2.4-2.8"/>'),
   check:svg('<path d="M5 12.5l4.5 4.5L19 7.5"/>', 13),
   later:svg('<path d="M5 12h14M13 6l6 6-6 6"/>', 16),
+  filter:svg('<path d="M4 6h16M7 12h10M10 18h4"/>', 17),
   x:svg('<path d="M6 6l12 12M18 6L6 18"/>', 17),
   sun:svg('<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/>', 16),
   moon:svg('<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>', 16),
@@ -433,12 +456,14 @@ const S = {
   subs:lsGet('pd.subs') === 'hide' ? 'hide' : 'show',
   f:{work:{cat:'all', sort:'priority', show:'open', q:''}, personal:{cat:'all', sort:'priority', show:'open', q:''}},
   nt:{area:'work', cat:'', newCat:'', title:'', due:'', prio:0, notes:'', subs:[], pick:false},
-  draft:null, ckEdit:false, modal:null, askDelete:false, askClear:false, setTab:'look', histTab:'tasks', popOpen:false,
+  draft:null, ckEdit:false, modal:null, fsheet:null, askDelete:false, askClear:false, setTab:'look', histTab:'tasks', popOpen:false,
   hist:{q:'', area:'all', days:30}, pf:{name:'', area:'work', color:'c1'}
 };
 const app = document.getElementById('root');
 const modalEl = document.getElementById('modal');
 const popEl = document.getElementById('pop');
+const fsheetEl = document.getElementById('fsheet');
+let fFrom = null;
 let viewEl = null;
 
 /* ---------- data layer (Supabase) ---------- */
@@ -763,8 +788,6 @@ function vArea(a){
   if(!ready()) return '<div class="page-h"><div><h1>' + AREAS[a] + '</h1></div></div>' + skeleton();
   const f = S.f[a], list = areaTasks(a), ap = areaProgress(a);
   const cats = S.projects.filter(p => p.area === a && !p.archived).sort((x, y) => (x.name || '').localeCompare(y.name || ''));
-  const cnt = id => S.tasks.filter(x => x.area === a && isOpen(x) && (id === 'all' || (id === '__none' ? !proj(x.projectId) : x.projectId === id))).length;
-  const chip = (id, label) => '<button class="chipb" data-act="areaCat" data-a="' + a + '" data-v="' + id + '" aria-pressed="' + (f.cat === id) + '">' + h(label) + ' <span class="faint" style="font-weight:700">' + cnt(id) + '</span></button>';
   const parts = [];
   if(f.cat === 'all'){
     cats.map(p => p.id).concat(['']).forEach(pid => {
@@ -775,13 +798,50 @@ function vArea(a){
       rows.forEach(x => parts.push(taskRow(x)));
     });
   } else list.forEach(x => parts.push(taskRow(x)));
-  return '<div class="page-h"><div><h1>' + AREAS[a] + '</h1><p class="date">' + plural(ap.open, 'open task') + ' · ' + ap.pct + '% complete overall</p></div><button class="btn btn-primary" data-act="newIn" data-a="' + a + '">' + ICON.plus.replace('width="22" height="22"', 'width="16" height="16"') + ' New task</button></div>' +
-    '<div class="cats" role="group" aria-label="Category">' + chip('all', 'All') + cats.map(p => chip(p.id, p.name)).join('') + (S.tasks.some(x => x.area === a && !proj(x.projectId)) ? chip('__none', 'General') : '') + '</div>' +
-    '<section class="card"><div class="tools"><div class="row"><span class="faint">Sort</span>' + seg([['priority', 'Priority'], ['deadline', 'Deadline'], ['newest', 'Newest']], f.sort, 'areaF', {k:a + '.sort', label:'Sort'}) + '</div>' +
-    '<div class="row"><span class="faint">Show</span>' + seg([['open', 'Open'], ['recent', 'Open + last 7 days'], ['done', 'Done']], f.show, 'areaF', {k:a + '.show', label:'Show'}) + '</div>' +
-    '<input class="search" id="q-' + a + '" type="search" data-bind="f.' + a + '.q" data-render="1" value="' + h(f.q) + '" placeholder="Search ' + AREAS[a] + ' tasks" aria-label="Search tasks"></div>' +
-    (parts.length ? '<div class="list">' + parts.join('') + '</div>' : '<p class="empty">' + (S.tasks.some(x => x.area === a) ? 'No tasks match these filters.' : 'No ' + AREAS[a] + ' tasks yet. Add the first one with New task.') + '</p>') + '</section>';
+  const nf = filterCount(a);
+  return '<div class="page-h"><div><h1>' + AREAS[a] + '</h1><p class="date">' + plural(ap.open, 'open task') + ' · ' + ap.pct + '% complete overall</p></div><button class="btn filter-btn" data-act="openFilter" data-a="' + a + '" aria-haspopup="dialog">' + ICON.filter + ' Filter' + (nf ? '<span class="fbadge" aria-label="' + nf + ' active">' + nf + '</span>' : '') + '</button></div>' +
+    '<section class="card">' +
+    (parts.length ? '<div class="list">' + parts.join('') + '</div>' : '<p class="empty">' + (S.tasks.some(x => x.area === a) ? 'No tasks match these filters.' + (nf ? ' <button class="btn btn-sm" data-act="filterReset" data-a="' + a + '">Clear filters</button>' : '') : 'No ' + AREAS[a] + ' tasks yet. Add the first one with the + button.') + '</p>') + '</section>';
 }
+
+/* Filter: lives in its own sheet, so the page itself shows the work */
+const FILTER_DEFAULT = {cat:'all', sort:'priority', show:'open', q:''};
+const filterCount = a => ['cat', 'sort', 'show'].filter(k => S.f[a][k] !== FILTER_DEFAULT[k]).length + (S.f[a].q.trim() ? 1 : 0);
+function vFilter(a){
+  const f = S.f[a];
+  const cats = S.projects.filter(p => p.area === a && !p.archived).sort((x, y) => (x.name || '').localeCompare(y.name || ''));
+  const cnt = id => S.tasks.filter(x => x.area === a && isOpen(x) && (id === 'all' || (id === '__none' ? !proj(x.projectId) : x.projectId === id))).length;
+  const chip = (id, label) => '<button class="chipb" data-act="areaCat" data-a="' + a + '" data-v="' + id + '" aria-pressed="' + (f.cat === id) + '">' + h(label) + ' <span class="faint" style="font-weight:700">' + cnt(id) + '</span></button>';
+  return '<div class="m-back" data-act="closeFilter"></div><div class="f-panel" role="dialog" aria-modal="true" aria-label="Filter ' + AREAS[a] + ' tasks">' +
+    '<div class="f-grab" aria-hidden="true"></div><div class="m-head"><h2 style="flex:1;font:400 22px var(--f-d)">Filter · ' + AREAS[a] + '</h2><button class="icon-btn" data-act="closeFilter" aria-label="Close">' + ICON.x + '</button></div>' +
+    '<div class="m-body">' +
+    '<div class="sec"><div class="lab">Search</div><input class="search" id="q-' + a + '" type="search" data-bind="f.' + a + '.q" data-render="1" value="' + h(f.q) + '" placeholder="Search ' + AREAS[a] + ' tasks" aria-label="Search tasks"></div>' +
+    '<div class="sec"><div class="lab">Category</div><div class="chips" role="group" aria-label="Category">' + chip('all', 'All') + cats.map(p => chip(p.id, p.name)).join('') + (S.tasks.some(x => x.area === a && !proj(x.projectId)) ? chip('__none', 'General') : '') + '</div></div>' +
+    '<div class="sec"><div class="lab">Sort</div>' + seg([['priority', 'Priority'], ['deadline', 'Deadline'], ['newest', 'Newest']], f.sort, 'areaF', {k:a + '.sort', label:'Sort'}) + '</div>' +
+    '<div class="sec"><div class="lab">Show</div>' + seg([['open', 'Open'], ['recent', 'Open + 7 days'], ['done', 'Done']], f.show, 'areaF', {k:a + '.show', label:'Show'}) + '</div>' +
+    '</div><div class="f-foot"><button class="btn btn-quiet" data-act="filterReset" data-a="' + a + '">Reset</button><button class="btn btn-primary" id="f-done" data-act="closeFilter">' + fDoneLabel(a) + '</button></div></div>';
+}
+const fDoneLabel = a => 'Show ' + plural(areaTasks(a).length, 'task');
+function openFilter(a){
+  fFrom = document.activeElement; S.fsheet = a; fsheetEl.hidden = false; fsheetEl.innerHTML = vFilter(a);
+  document.documentElement.style.overflow = 'hidden';
+  const p = fsheetEl.querySelector('.f-panel'); if(p) p.focus({preventScroll:true});
+}
+function closeFilter(){
+  if(!S.fsheet) return;
+  S.fsheet = null; fsheetEl.hidden = true; fsheetEl.innerHTML = ''; document.documentElement.style.overflow = S.modal ? 'hidden' : '';
+  if(fFrom && document.contains(fFrom) && fFrom.focus) fFrom.focus(); fFrom = null;
+}
+/* redraw the sheet's buttons after a pick, and keep the page behind it in step */
+function fsheetPaint(){
+  if(!S.fsheet) return;
+  const body = fsheetEl.querySelector('.m-body'), top = body ? body.scrollTop : 0;
+  const ae = document.activeElement, keep = ae && fsheetEl.contains(ae) && ae.dataset.act ? '[data-act="' + ae.dataset.act + '"]' + (ae.dataset.v !== undefined ? '[data-v="' + ae.dataset.v + '"]' : '') + (ae.dataset.k ? '[data-k="' + ae.dataset.k + '"]' : '') : '';
+  fsheetEl.innerHTML = vFilter(S.fsheet);
+  const b = fsheetEl.querySelector('.m-body'); if(b) b.scrollTop = top;
+  if(keep){ const el = fsheetEl.querySelector(keep); if(el) el.focus({preventScroll:true}); }
+}
+function fsheetCount(){ const b = document.getElementById('f-done'); if(b && S.fsheet) b.textContent = fDoneLabel(S.fsheet); }
 
 /* To-Do: small things to remember, not projects. No category, no progress. */
 const todoDay = k => k === 'today' ? today() : k === 'tomorrow' ? addDays(today(), 1) : '';
@@ -794,7 +854,7 @@ function todoRow(x){
     '<span class="tact">' + (x.done ? '' : '<button class="icon-btn" data-act="todoLater" data-id="' + x.id + '" aria-label="Move to tomorrow" title="Move to tomorrow">' + ICON.later + '</button>') + '<button class="icon-btn" data-act="todoDel" data-id="' + x.id + '" aria-label="Delete: ' + h(x.text) + '" title="Delete">' + ICON.x + '</button></span></div>';
 }
 function vTodo(){
-  const head = '<div class="page-h"><div><h1>To-Do</h1><p class="date">Small things to remember. Not a project, no progress: just do not forget them.</p></div></div>';
+  const head = '<div class="page-h"><div><h1>To-Do</h1></div></div>';
   if(!ready() || S.todosOk === null) return head + skeleton();
   if(!S.todosOk) return head + '<section class="card"><h2>One-time setup needed</h2><p class="muted" style="margin-top:8px;max-width:60ch">The To-Do list needs a small addition to your database. Everything else keeps working. Ask your assistant to finish the setup, then reload this page.</p></section>';
   const now = today(), open = S.todos.filter(x => !x.done);
@@ -981,7 +1041,7 @@ const ROUTES = ['dash', 'todo', 'work', 'personal', 'new', 'settings'];
 function go(v, noPush){
   if(ROUTES.indexOf(v) < 0) v = 'dash';
   if(S.view !== v) S.enter = true;
-  S.view = v; S.askClear = false; closePop();
+  S.view = v; S.askClear = false; closePop(); closeFilter();
   if(!noPush && location.hash !== '#' + v) try{ history.pushState(null, '', '#' + v); }catch(e){}
   window.scrollTo(0, 0); render();
 }
@@ -1009,7 +1069,14 @@ function animThen(el, cls, ms, fn){ if(!motionOn()){ fn(); return; } el.classLis
 /* ---------- actions ---------- */
 const findT = b => S.tasks.find(x => x.id === b.dataset.id);
 const ACT = {
-  go(b){ if(b.dataset.tab) S.setTab = b.dataset.tab; go(b.dataset.v); },
+  go(b){
+    if(b.dataset.tab) S.setTab = b.dataset.tab;
+    /* the + button opened from Company or Personal starts in that area and category, unless a draft is already under way */
+    if(b.dataset.v === 'new' && (S.view === 'work' || S.view === 'personal') && !S.nt.title.trim()){
+      const c = S.f[S.view].cat; S.nt.area = S.view; S.nt.cat = (c !== 'all' && c !== '__none') ? c : '';
+    }
+    go(b.dataset.v);
+  },
   nav(b){ if(b.dataset.tab) S.setTab = b.dataset.tab; go(b.dataset.v); },
   togglePop(){ S.popOpen ? closePop(true) : openPop(); },
   setTheme(b){ S.theme = b.dataset.v; lsSet('pd.theme', S.theme); applyLook(); syncSegs(); },
@@ -1059,9 +1126,11 @@ const ACT = {
   todoUndo(b){ write('todos/' + b.dataset.id, 'update', {done:false, doneAt:''}); },
   todoLater(b){ write('todos/' + b.dataset.id, 'update', {day:addDays(today(), 1)}); toast('Moved to tomorrow'); },
   todoDel(b){ write('todos/' + b.dataset.id, 'delete'); },
-  areaCat(b){ S.f[b.dataset.a].cat = b.dataset.v; render(); },
-  areaF(b){ const [a, k] = b.dataset.k.split('.'); S.f[a][k] = b.dataset.v; render(); },
-  newIn(b){ S.nt.area = b.dataset.a; const c = S.f[b.dataset.a].cat; S.nt.cat = (c !== 'all' && c !== '__none') ? c : ''; go('new'); },
+  areaCat(b){ S.f[b.dataset.a].cat = b.dataset.v; render(); fsheetPaint(); },
+  areaF(b){ const [a, k] = b.dataset.k.split('.'); S.f[a][k] = b.dataset.v; render(); fsheetPaint(); },
+  openFilter(b){ openFilter(b.dataset.a); },
+  closeFilter(){ closeFilter(); },
+  filterReset(b){ const a = b.dataset.a; Object.assign(S.f[a], FILTER_DEFAULT); render(); fsheetPaint(); },
   ntArea(b){ S.nt.area = b.dataset.v; S.nt.cat = ''; S.nt.newCat = ''; render(); },
   ntPrio(b){ S.nt.prio = +b.dataset.v; },
   ntDue(b){ S.nt.due = b.dataset.v; const el = document.getElementById('nt-due'); if(el) el.value = S.nt.due; ntPaint(); },
@@ -1143,7 +1212,7 @@ document.addEventListener('pointerdown', e => {
 }, {passive:true});
 document.addEventListener('input', e => {
   const el = e.target;
-  if(el.dataset.bind){ setPath(el.dataset.bind, el.value); if(el.dataset.render) render(); if(el.dataset.bind.indexOf('nt.') === 0) ntPaint(); }
+  if(el.dataset.bind){ setPath(el.dataset.bind, el.value); if(el.dataset.render) render(); if(el.dataset.bind.indexOf('nt.') === 0) ntPaint(); if(S.fsheet) fsheetCount(); }
   if(el.dataset.mchg === 'pct'){ const o = document.getElementById('m-pct-out'); if(o) o.textContent = el.value + '%'; }
 });
 document.addEventListener('change', e => {
@@ -1162,6 +1231,7 @@ document.addEventListener('change', e => {
 document.addEventListener('keydown', e => {
   if(e.key === 'Escape'){
     if(S.modal) closeModal();
+    else if(S.fsheet) closeFilter();
     else if(S.popOpen) closePop(true);
     else { const open = document.querySelector('.dd-m:not([hidden])'); if(open){ const t = open.parentNode.querySelector('.dd-b'); closeDD(); if(t) t.focus(); } }
     return;
@@ -1179,6 +1249,10 @@ init();
 document.addEventListener('visibilitychange', () => { if(!document.hidden && S.user) reloadSoon(); });
 })();
 
+/* Installable app: lets phones offer "Install / Add to Home Screen". Needs https (GitHub Pages) or localhost. */
+if('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')){
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
 </script>
 </body>
 </html>
