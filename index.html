@@ -251,8 +251,10 @@ button.pill:hover{filter:brightness(1.1)}
 .swd{display:block;width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,var(--gA),var(--gB));box-shadow:0 0 0 2px var(--surface),0 0 0 3px color-mix(in srgb,var(--gB) 60%,transparent)}
 .tools{display:flex;gap:14px 22px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
 .tools .search{max-width:260px;margin-left:auto}
-.filter-btn{gap:8px}
-.fbadge{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:linear-gradient(135deg,var(--gA),var(--gM));color:#fff;font-size:12px;font-weight:800}
+.page-h.nowrap{flex-wrap:nowrap;align-items:center}
+.page-h.nowrap>div{min-width:0;flex:1}
+.filter-btn{flex:none;width:44px;height:44px;padding:0;display:grid;place-items:center}
+.fbadge{position:absolute;top:3px;right:3px;display:grid;place-items:center;min-width:16px;height:16px;padding:0 4px;border-radius:99px;background:linear-gradient(135deg,var(--gA),var(--gM));color:#fff;font-size:11px;font-weight:800;line-height:1}
 .fsheet{position:fixed;inset:0;z-index:55;display:flex;align-items:center;justify-content:center}
 .f-panel{position:relative;width:min(520px,calc(100% - 32px));max-height:min(640px,calc(100% - 48px));background:var(--surface);border:1px solid var(--line2);border-radius:var(--r);display:flex;flex-direction:column;box-shadow:0 30px 70px -24px rgba(0,0,0,.7);animation:k-menu .28s cubic-bezier(.2,.8,.2,1);outline:0}
 .f-panel .m-body{flex:1;min-height:0}
@@ -455,7 +457,7 @@ const S = {
   theme:document.documentElement.getAttribute('data-theme') || 'dark', accent:document.documentElement.getAttribute('data-accent') || 'ruby', motion:document.documentElement.getAttribute('data-motion') || 'subtle',
   subs:lsGet('pd.subs') === 'hide' ? 'hide' : 'show',
   f:{work:{cat:'all', sort:'priority', show:'open', q:''}, personal:{cat:'all', sort:'priority', show:'open', q:''}},
-  nt:{area:'work', cat:'', newCat:'', title:'', due:'', prio:0, notes:'', subs:[], pick:false},
+  nt:{kind:'task', area:'work', cat:'', newCat:'', title:'', due:'', prio:0, notes:'', subs:[], pick:false},
   draft:null, ckEdit:false, modal:null, fsheet:null, askDelete:false, askClear:false, setTab:'look', histTab:'tasks', popOpen:false,
   hist:{q:'', area:'all', days:30}, pf:{name:'', area:'work', color:'c1'}
 };
@@ -789,17 +791,24 @@ function vArea(a){
   const f = S.f[a], list = areaTasks(a), ap = areaProgress(a);
   const cats = S.projects.filter(p => p.area === a && !p.archived).sort((x, y) => (x.name || '').localeCompare(y.name || ''));
   const parts = [];
+  /* every group, whether all categories or just the one picked, starts with its category name and progress */
+  const grp = pid => {
+    const p = pid ? proj(pid) : null, pp = p ? projProgress(p) : null;
+    return '<div class="grp">' + gemSvg(22) + '<h3>' + h(p ? p.name : 'General') + '</h3>' + (pp ? '<span class="pc"><span>' + pp.done + '/' + pp.total + '</span><span class="thread"><i style="width:' + pp.pct + '%"></i></span><span>' + pp.pct + '%</span></span>' : '') + '</div>';
+  };
   if(f.cat === 'all'){
     cats.map(p => p.id).concat(['']).forEach(pid => {
       const rows = list.filter(x => (x.projectId || '') === pid || (pid === '' && !proj(x.projectId)));
       if(!rows.length) return;
-      const p = pid ? proj(pid) : null, pp = p ? projProgress(p) : null;
-      parts.push('<div class="grp">' + gemSvg(22) + '<h3>' + h(p ? p.name : 'General') + '</h3>' + (pp ? '<span class="pc"><span>' + pp.done + '/' + pp.total + '</span><span class="thread"><i style="width:' + pp.pct + '%"></i></span><span>' + pp.pct + '%</span></span>' : '') + '</div>');
+      parts.push(grp(pid));
       rows.forEach(x => parts.push(taskRow(x)));
     });
-  } else list.forEach(x => parts.push(taskRow(x)));
+  } else if(list.length){
+    parts.push(grp(f.cat === '__none' ? '' : f.cat));
+    list.forEach(x => parts.push(taskRow(x)));
+  }
   const nf = filterCount(a);
-  return '<div class="page-h"><div><h1>' + AREAS[a] + '</h1><p class="date">' + plural(ap.open, 'open task') + ' · ' + ap.pct + '% complete overall</p></div><button class="btn filter-btn" data-act="openFilter" data-a="' + a + '" aria-haspopup="dialog">' + ICON.filter + ' Filter' + (nf ? '<span class="fbadge" aria-label="' + nf + ' active">' + nf + '</span>' : '') + '</button></div>' +
+  return '<div class="page-h nowrap"><div><h1>' + AREAS[a] + '</h1><p class="date">' + plural(ap.open, 'open task') + ' · ' + ap.pct + '% complete overall</p></div><button class="btn filter-btn" data-act="openFilter" data-a="' + a + '" aria-haspopup="dialog" aria-label="Filter">' + ICON.filter + (nf ? '<span class="fbadge" aria-label="' + nf + ' active">' + nf + '</span>' : '') + '</button></div>' +
     '<section class="card">' +
     (parts.length ? '<div class="list">' + parts.join('') + '</div>' : '<p class="empty">' + (S.tasks.some(x => x.area === a) ? 'No tasks match these filters.' + (nf ? ' <button class="btn btn-sm" data-act="filterReset" data-a="' + a + '">Clear filters</button>' : '') : 'No ' + AREAS[a] + ' tasks yet. Add the first one with the + button.') + '</p>') + '</section>';
 }
@@ -861,8 +870,7 @@ function vTodo(){
   const todayL = open.filter(x => x.day && x.day <= now).sort(byTodo), soon = open.filter(x => x.day && x.day > now).sort(byTodo), some = open.filter(x => !x.day).sort(byTodo);
   const done = S.todos.filter(todoDoneToday).sort((a, b) => (b.doneAt || '').localeCompare(a.doneAt || ''));
   const block = (title, sub, rows, empty) => '<section class="card"><div class="ch"><h2>' + title + '</h2><span class="sub">' + sub + '</span></div>' + (rows.length ? '<div class="list">' + rows.map(todoRow).join('') + '</div>' : '<p class="empty">' + empty + '</p>') + '</section>';
-  return head + '<section class="card lit"><div class="todo-add"><input id="td-text" type="text" data-bind="td.text" data-enter="todoAdd" value="' + h(S.td.text) + '" placeholder="Remember to… (press Enter)" aria-label="New to-do" autocomplete="off" style="flex:1 1 260px">' +
-    seg([['today', 'Today'], ['tomorrow', 'Tomorrow'], ['someday', 'Someday']], S.td.day, 'todoDay', {fast:true, label:'Day'}) + '<button class="btn btn-primary" data-act="todoAdd">Add</button></div></section>' +
+  return head +
     block('Today', plural(todayL.length, 'thing') + ' to remember', todayL, 'Nothing to remember right now.') +
     (soon.length ? block('Coming up', plural(soon.length, 'thing'), soon, '') : '') +
     (some.length ? block('Someday', 'No day yet', some, '') : '') +
@@ -878,10 +886,19 @@ function ntHint(){
   if(!n.due) miss.push('a deadline');
   return miss.length ? 'To create it, add ' + miss.join(', ').replace(/, ([^,]*)$/, ' and $1') + '.' : '';
 }
+function vNewTodo(){
+  if(S.todosOk === null) return skeleton();
+  if(!S.todosOk) return '<section class="card"><h2>One-time setup needed</h2><p class="muted" style="margin-top:8px;max-width:60ch">The To-Do list needs a small addition to your database. Everything else keeps working. Ask your assistant to finish the setup, then reload this page.</p></section>';
+  return '<section class="card"><div class="form"><div><label for="td-text">What to remember</label><input id="td-text" type="text" data-bind="td.text" data-enter="todoAdd" value="' + h(S.td.text) + '" placeholder="e.g. Call the supplier" autocomplete="off"></div>' +
+    '<div class="sec"><h3>When</h3><div class="row">' + seg([['today', 'Today'], ['tomorrow', 'Tomorrow'], ['someday', 'Someday']], S.td.day, 'todoDay', {fast:true, label:'Day'}) + '</div></div>' +
+    '<div class="row"><button class="btn btn-primary" data-act="todoAdd">Add to-do</button></div></div></section>';
+}
 function vNew(){
   const n = S.nt, cats = S.projects.filter(p => p.area === n.area && !p.archived).sort((x, y) => (x.name || '').localeCompare(y.name || ''));
   const quick = [['Today', today()], ['Tomorrow', addDays(today(), 1)], ['In a week', addDays(today(), 7)]];
-  return '<div class="page-h"><div><h1>New Task</h1><p class="date">Start with the big work, then add the task under it.</p></div></div>' +
+  const kind = '<div class="row" style="margin-bottom:14px">' + seg([['task', 'Task'], ['todo', 'To-Do']], n.kind === 'todo' ? 'todo' : 'task', 'ntKind', {label:'What to add', fast:true}) + '</div>';
+  if(n.kind === 'todo') return '<div class="page-h"><div><h1>New To-Do</h1></div></div>' + kind + (ready() ? vNewTodo() : skeleton());
+  return '<div class="page-h"><div><h1>New Task</h1></div></div>' + kind +
     '<section class="card"><div class="form">' +
     '<div class="sec"><h3>Big work</h3><div class="row">' + seg([['work', 'Company'], ['personal', 'Personal']], n.area, 'ntArea', {label:'Area'}) + '</div>' +
     '<div><label for="nt-cat">Category</label><select id="nt-cat" data-bind="nt.cat" data-render="1" aria-label="Category"><option value=""' + (n.cat === '' ? ' selected' : '') + ' disabled>Choose the big work…</option>' + cats.map(p => '<option value="' + p.id + '"' + (n.cat === p.id ? ' selected' : '') + '>' + h(p.name) + '</option>').join('') + '<option value="__new"' + (n.cat === '__new' ? ' selected' : '') + '>＋ New big work…</option></select></div>' +
@@ -1072,8 +1089,10 @@ const ACT = {
   go(b){
     if(b.dataset.tab) S.setTab = b.dataset.tab;
     /* the + button opened from Company or Personal starts in that area and category, unless a draft is already under way */
-    if(b.dataset.v === 'new' && (S.view === 'work' || S.view === 'personal') && !S.nt.title.trim()){
-      const c = S.f[S.view].cat; S.nt.area = S.view; S.nt.cat = (c !== 'all' && c !== '__none') ? c : '';
+    if(b.dataset.v === 'new' && S.view === 'todo') S.nt.kind = 'todo';
+    else if(b.dataset.v === 'new' && (S.view === 'work' || S.view === 'personal')){
+      S.nt.kind = 'task';
+      if(!S.nt.title.trim()){ const c = S.f[S.view].cat; S.nt.area = S.view; S.nt.cat = (c !== 'all' && c !== '__none') ? c : ''; }
     }
     go(b.dataset.v);
   },
@@ -1116,9 +1135,10 @@ const ACT = {
     if(!text){ const el = document.getElementById('td-text'); if(el) el.focus(); return; }
     if(!S.user){ toast('Sign in to save changes.'); return; }
     write('todos/' + newId(), 'set', {text:text.slice(0, 300), day:todoDay(S.td.day), done:false, doneAt:'', createdAt:nowIso()});
-    S.td.text = ''; render();
+    S.td.text = ''; render(); toast('To-Do added');
     const el = document.getElementById('td-text'); if(el) el.focus();
   },
+  ntKind(b){ S.nt.kind = b.dataset.v; render(); if(b.dataset.v === 'todo'){ const el = document.getElementById('td-text'); if(el) el.focus(); } },
   todoDone(b){ const x = S.todos.find(t => t.id === b.dataset.id), row = b.closest('.todo'); if(!x || (row && row.classList.contains('is-done'))) return;
     b.classList.add('ok'); if(row) row.classList.add('is-done');
     const go = () => write('todos/' + x.id, 'update', {done:true, doneAt:nowIso()});

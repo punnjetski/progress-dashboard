@@ -5,9 +5,9 @@ A private task and progress dashboard with six pages:
 | Page | What it is for |
 |---|---|
 | Dashboard | Today's Priority, Week Progress (percent complete and what needs handling this week), and the readiness check-in |
-| To-Do | Small reminders ("call my manager", "buy moisturizer"): no category, no progress |
-| Company, Personal | All tasks grouped by category (the "big work"), with a category filter. Every row has a star to pick it for Today's Priority and a Done button |
-| New Task | Pick the big work first, then the task. A deadline is required |
+| To-Do | Small reminders ("call my manager", "buy moisturizer"): no category, no progress. Only the list is shown; add new ones with the + button |
+| Company, Personal | All tasks grouped by category (the "big work"). A filter icon opens a separate sheet with search, category, sort and show. Every row has a star to pick it for Today's Priority and a Done button |
+| New (the + button) | Choose Task or To-Do. A task: pick the big work first, then the task; a deadline is required. A To-Do: just the text and when |
 | Settings | Appearance (light, dark, auto; accent gem; motion), subtasks on or off, categories, history, account |
 
 The look is dark grey and ivory with one accent gem you choose (Ruby, Sapphire, Emerald, Amethyst, Topaz) shown as slowly moving ambient light. Motion can be turned Off or Full in Settings.
